@@ -69,6 +69,7 @@ by popular demand, pyrep can parse json objects from stdin with the
 -j/--json flag. They are passed into the environment as the `j` object.
 combining with the -l flag will treat stdin as one json object per line.
 
+Home: https://github.com/ninjaaron/pyrep
 ------------------------------------------------------------------------
 '''
 import collections
