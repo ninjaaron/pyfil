@@ -45,7 +45,9 @@ stdin.read() to get a string of all lines, if that's what you need.
 
 looping over stdin
 ~~~~~~~~~~~~~~~~~~
-one can do simple loops with a generator expression:
+one can do simple loops with a generator expression. (note that any
+expression that evaluates to an iterator will print each item on a new
+line)
 
 .. code::
 
