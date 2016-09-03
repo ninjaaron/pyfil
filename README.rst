@@ -85,7 +85,10 @@ are used.
 
 Using ``-s``/``--split`` or ``-F``/``--field-sep`` for doing awk things
 also implies --loop. The resulting list is named ``f`` in the execution
-environment, in quazi-Perl fashion.
+environment, in quazi-Perl fashion. (oh, and that list is actually a
+subclass of collections.UserList that returns an empty string if the
+index doesn't exist, so it like awk with empty fields, rather than
+throwing and error and interupting iteration).
 
 Suppressing output and using statements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

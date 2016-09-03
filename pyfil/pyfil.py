@@ -55,7 +55,9 @@ used). --loop is implied if either of these options are used.
 
 using -s/--split or -F/--field-sep for doing awk things also implies
 --loop. The resulting list is named `f` in the execution environment, in
-quazi-perl fashion.
+quazi-perl fashion. (oh, and that list is actually a subclass of
+collections.UserList that returns an empty string if the index doesn't
+exist, so it acts more like awk with empty fields).
 
 Suppressing output and using statements
 ---------------------------------------
