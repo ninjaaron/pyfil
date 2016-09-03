@@ -51,7 +51,11 @@ run after the loop. Note that the --pre option is run with exec instead
 of eval, and therefore output is never printed, and statements may be
 used. This is for things like initializing container types. --post is
 automatically printed and statements are not allowed (unless --quiet is
-used).
+used). --loop is implied if either of these options are used.
+
+using -s/--split or -F/--field-sep for doing awk things also implies
+--loop. The resulting list is named `f` in the execution environment, in
+quazi-perl fashion.
 
 Suppressing output and using statements
 ---------------------------------------
@@ -76,6 +80,7 @@ import collections
 import sys
 import json
 import os
+import re
 from . import env
 from functools import update_wrapper
 
@@ -144,6 +149,12 @@ def main():
                     help='expression to evaluate before the loop')
     ap.add_argument('-e', '--post',
                     help='expression to evaluate after the loop')
+    ap.add_argument('-s', '--split', action='store_true',
+                    help="split lines from stdin on whitespace into list 'f'. "
+                         'implies --loop')
+    ap.add_argument('-F', '--field-sep',
+                    help="regex used to split lines from stdin into list 'f'. "
+                          "implies -l")
     a = ap.parse_args()
 
     func = 'exec' if a.quiet else 'eval'
@@ -157,13 +168,18 @@ def main():
 
     namespace.update(stdin=StdIn())
 
-    if a.loop:
+    if a.loop or a.pre or a.post or a.split or a.field_sep:
         if a.pre:
             exec(a.pre, namespace)
         for i in map(str.rstrip, sys.stdin):
             namespace.update(i=i)
             if a.json:
                 namespace.update(j=json.loads(i))
+            elif a.split:
+                namespace.update(f=i.split())
+            elif a.field_sep:
+                namespace.update(f=re.split(a.field_sep, i))
+
             run(expressions, a.quiet, namespace)
         if a.post:
             run((a.post,), a.quiet, namespace)

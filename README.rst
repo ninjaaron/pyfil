@@ -61,7 +61,8 @@ line)
     HOME/
     ...
 
-However, the -l/--loop flag rep loops over stdin in a context like this:
+However, the ``-l``/``--loop`` flag rep loops over stdin in a context
+like this:
 
 .. code:: python
 
@@ -74,12 +75,17 @@ Therefore, the above loop can also be written thusly:
 
     $ ls / | rep -l 'i.upper()'
 
---pre and --post (-b and -e) options can be used to specify actions to
-run after the loop. Note that the --pre option is run with exec instead
-of eval, and therefore output is never printed, and statements may be
-used. This is for things like initializing container types. --post is
-automatically printed and statements are not allowed (unless --quiet is
-used).
+``--pre`` and ``--post`` (-b and -e) options can be used to specify
+actions to run after the loop. Note that the --pre option is run with
+exec instead of eval, and therefore output is never printed, and
+statements may be used. This is for things like initializing container
+types. --post is automatically printed and statements are not allowed
+(unless --quiet is used). --loop is implied if either of these options
+are used.
+
+Using ``-s``/``--split`` or ``-F``/``--field-sep`` for doing awk things
+also implies --loop. The resulting list is named ``f`` in the execution
+environment, in quazi-Perl fashion.
 
 Suppressing output and using statements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -94,5 +100,6 @@ printed explicitely.
 json
 ~~~~
 by popular demand, pyfil can parse json objects from stdin with the
--j/--json flag. They are passed into the environment as the `j` object.
-combining with the -l flag will treat stdin as one json object per line.
+-j/--json flag. They are passed into the environment as the ``j``
+object.  combining with the -l flag will treat stdin as one json object
+per line.
