@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='pyrep',
+    name='pyfil',
     version='0.0',
     author='Aaron Christianson',
     license='BSD',
@@ -10,6 +10,6 @@ setup(
     description='print the return value of python expression -- also in loops',
     long_description=open('README.rst').read(),
     keywords='evaluate',
-    packages=['pyrep'],
-    entry_points={'console_scripts': ['rep=pyrep.pyrep:main']},
+    packages=['pyfil'],
+    entry_points={'console_scripts': ['rep=pyfil.pyfil:main']},
 )

@@ -1,4 +1,4 @@
-pyrep
+pyfil
 =====
 This ain't the first project of this kind, and it won't be the last, but
 this one is special because it's all mine. ``pyeval`` is a more
@@ -9,7 +9,7 @@ jealous that they did it first. :D
 Pretty sure there are other projects like this, too. It's sort of an
 obvious thing to try to do.
 
-``pyrep`` gives you the ``rep`` command. This is because when I
+``pyfil`` gives you the ``rep`` command. This is because when I
 initially posted it in #python IRC channel, user [Tritium] (that ray of
 sunshine) said I had recreated the REP of the python REPL (read evaluate
 print loop). That is more or less the case. ``rep`` reads python
@@ -24,18 +24,18 @@ usage
 
 available objects
 ~~~~~~~~~~~~~~~~~
-Automatically imports (unless overridden in ~/.config/pyrep-env.py):
+Automatically imports (unless overridden in ~/.config/pyfil-env.py):
     ``sys``, ``os``, ``re``, ``math``, ``pprint from pprint``, ``timeit
     from timeit`` and ``strftime from time``.
 
 If you'd like to specify a custom execution environment for rep, create
-~/.config/pyrep-env.py and put things in it.
+~/.config/pyfil-env.py and put things in it.
 
 The execution environment also has a special object for stdin,
 creatively named ``stdin``. This differs from sys.stdin in that it
 rstrips (aka chomps) all the lines when you iterate over it, and it has
 a property, stdin.l, which returns a list of the (rstripped) lines.
-pyrep is quite bullish about using rstrip because python's print
+pyfil is quite bullish about using rstrip because python's print
 function will supply an additional newline, and if you just want the
 value of the text in the line, you almost never want the newline
 character. If you do want the newlines, access sys.stdin directly.
@@ -79,7 +79,7 @@ used).
 
 Suppressing output and using statements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-by default, pyrep prints the return value of expressions. Because this
+by default, pyfil prints the return value of expressions. Because this
 uses eval() internally to get value, statements may not be used. exec()
 supports statements, but it does not return the value of expressions
 when they are evaluated. When the -q/--quiet flag is used, automatic
@@ -89,6 +89,6 @@ printed explicitely.
 
 json
 ~~~~
-by popular demand, pyrep can parse json objects from stdin with the
+by popular demand, pyfil can parse json objects from stdin with the
 -j/--json flag. They are passed into the environment as the `j` object.
 combining with the -l flag will treat stdin as one json object per line.
