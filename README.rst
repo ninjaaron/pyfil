@@ -19,6 +19,8 @@ something, like the Python REPL, but it also has some special flags for
 iterating on stdin and parsing JSON, which make it useful as a filter
 for shell one-liners or scripts (like Perl).
 
+pyfil is in pypi (i.e. you can get it easily with pip, if you want)
+
 usage
 -----
 
