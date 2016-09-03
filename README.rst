@@ -25,20 +25,20 @@ usage
 available objects
 ~~~~~~~~~~~~~~~~~
 Automatically imports (unless overridden in ~/.config/pyrep-env.py):
-    sys, os, re, math, pprint from pprint, timeit from timeit and
-    strftime from time.
+    ``sys``, ``os``, ``re``, ``math``, ``pprint from pprint``, ``timeit
+    from timeit`` and ``strftime from time``.
 
 If you'd like to specify a custom execution environment for rep, create
 ~/.config/pyrep-env.py and put things in it.
 
 The execution environment also has a special object for stdin,
-creatively named `stdin`. This differs from sys.stdin in that it rstrips
-(aka chomps) all the lines when you iterate over it, and it has a
-property, stdin.l, which returns a list of the (rstripped) lines. pyrep
-is quite bullish about using rstrip because python's print function will
-supply an additional newline, and if you just want the value of the text
-in the line, you almost never want the newline character. If you do want
-the newlines, access sys.stdin directly.
+creatively named ``stdin``. This differs from sys.stdin in that it
+rstrips (aka chomps) all the lines when you iterate over it, and it has
+a property, stdin.l, which returns a list of the (rstripped) lines.
+pyrep is quite bullish about using rstrip because python's print
+function will supply an additional newline, and if you just want the
+value of the text in the line, you almost never want the newline
+character. If you do want the newlines, access sys.stdin directly.
 
 stdin inherits the rest of its methods from stdin, so you can use
 stdin.read() to get a string of all lines, if that's what you need.
@@ -46,6 +46,8 @@ stdin.read() to get a string of all lines, if that's what you need.
 looping over stdin
 ~~~~~~~~~~~~~~~~~~
 one can do simple loops with a generator expression:
+
+.. code::
 
     $ ls / | rep '(i.upper() for i in stdin)'
     BIN@
@@ -57,10 +59,14 @@ one can do simple loops with a generator expression:
 
 However, the -l/--loop flag rep loops over stdin in a context like this:
 
+.. code:: python
+
     for i in map(str.rstrip, sys.stdin):
         expressions
 
 Therefore, the above loop can also be written thusly:
+
+.. code::
 
     $ ls / | rep -l 'i.upper()'
 
