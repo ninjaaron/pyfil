@@ -100,6 +100,7 @@ class reify(object):
 
 
 class StdIn:
+    'class for wrapping sys.stdin'
     def __init__(self):
         self.lines = map(str.rstrip, sys.stdin)
 
@@ -115,6 +116,15 @@ class StdIn:
 
     def __getattr__(self, name):
         return getattr(sys.stdin, name)
+
+
+class SafeList(collections.UserList):
+    'class for getting fields from stdin without raising errors'
+    def __getitem__(self, index):
+        try:
+            return self.data[index]
+        except IndexError:
+            return ''
 
 
 def run(expressions, quiet=False, namespace={}):
@@ -176,9 +186,9 @@ def main():
             if a.json:
                 namespace.update(j=json.loads(i))
             elif a.split:
-                namespace.update(f=i.split())
+                namespace.update(f=SafeList(i.split()))
             elif a.field_sep:
-                namespace.update(f=re.split(a.field_sep, i))
+                namespace.update(f=SafeList(re.split(a.field_sep, i)))
 
             run(expressions, a.quiet, namespace)
         if a.post:
