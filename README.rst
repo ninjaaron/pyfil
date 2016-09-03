@@ -73,7 +73,7 @@ Therefore, the above loop can also be written thusly:
 --pre and --post (-b and -e) options can be used to specify actions to
 run after the loop. Note that the --pre option is run with exec instead
 of eval, and therefore output is never printed, and statements may be
-used. This is for things like initializing container types. --pre is
+used. This is for things like initializing container types. --post is
 automatically printed and statements are not allowed (unless --quiet is
 used).
 
