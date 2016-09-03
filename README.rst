@@ -34,13 +34,13 @@ If you'd like to specify a custom execution environment for rep, create
 The execution environment also has a special object for stdin,
 creatively named ``stdin``. This differs from sys.stdin in that it
 rstrips (aka chomps) all the lines when you iterate over it, and it has
-a property, stdin.l, which returns a list of the (rstripped) lines.
+a property, ``stdin.l``, which returns a list of the (rstripped) lines.
 pyfil is quite bullish about using rstrip because python's print
 function will supply an additional newline, and if you just want the
 value of the text in the line, you almost never want the newline
 character. If you do want the newlines, access sys.stdin directly.
 
-stdin inherits the rest of its methods from stdin, so you can use
+stdin inherits the rest of its methods from sys.stdin, so you can use
 stdin.read() to get a string of all lines, if that's what you need.
 
 looping over stdin

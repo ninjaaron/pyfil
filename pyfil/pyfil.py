@@ -6,23 +6,23 @@ is an iterator, print each item on its own line.
 
 available objects
 -----------------
-Automatically imports (unless overridden in ~/.config/pyrep-env.py):
+Automatically imports (unless overridden in ~/.config/pyfil-env.py):
     sys, os, re, math, pprint from pprint, timeit from timeit and
     strftime from time.
 
 If you'd like to specify a custom execution environment for rep, create
-~/.config/pyrep-env.py and put things in it.
+~/.config/pyfil-env.py and put things in it.
 
 The execution environment also has a special object for stdin,
 creatively named `stdin`. This differs from sys.stdin in that it rstrips
 (aka chomps) all the lines when you iterate over it, and it has a
-property, stdin.l, which returns a list of the (rstripped) lines. pyrep
+property, stdin.l, which returns a list of the (rstripped) lines. pyfil
 is quite bullish about using rstrip because python's print function will
 supply an additional newline, and if you just want the value of the text
 in the line, you almost never want the newline character. If you do want
 the newlines, access sys.stdin directly.
 
-stdin inherits the rest of its methods from stdin, so you can use
+stdin inherits the rest of its methods from sys.stdin, so you can use
 stdin.read() to get a string of all lines, if that's what you need.
 
 looping over stdin
@@ -55,7 +55,7 @@ used).
 
 Suppressing output and using statements
 ---------------------------------------
-by default, pyrep prints the return value of expressions. Because this
+by default, pyfil prints the return value of expressions. Because this
 uses eval() internally to get value, statements may not be used. exec()
 supports statements, but it does not return the value of expressions
 when they are evaluated. When the -q/--quiet flag is used, automatic
@@ -65,11 +65,11 @@ printed explicitely.
 
 json
 ----
-by popular demand, pyrep can parse json objects from stdin with the
+by popular demand, pyfil can parse json objects from stdin with the
 -j/--json flag. They are passed into the environment as the `j` object.
 combining with the -l flag will treat stdin as one json object per line.
 
-Home: https://github.com/ninjaaron/pyrep
+Home: https://github.com/ninjaaron/pyfil
 ------------------------------------------------------------------------
 '''
 import collections
@@ -148,7 +148,7 @@ def main():
 
     func = 'exec' if a.quiet else 'eval'
     expressions = [compile(e, '<string>', func) for e in a.expression]
-    user_env = os.environ['HOME'] + '/.config/pyrep-env.py'
+    user_env = os.environ['HOME'] + '/.config/pyfil-env.py'
     if os.path.exists(user_env):
         namespace = {}
         exec(open(user_env).read(), namespace)
