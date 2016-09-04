@@ -47,11 +47,12 @@ Therefore, the above loop can also be written thusly:
     $ ls / | rep -l 'i.upper()'
 
 --pre and --post (-b and -e) options can be used to specify actions to
-run after the loop. Note that the --pre option is run with exec instead
-of eval, and therefore output is never printed, and statements may be
-used. This is for things like initializing container types. --post is
-automatically printed and statements are not allowed (unless --quiet is
-used). --loop is implied if either of these options are used.
+run before or after the loop. Note that the --pre option is run with
+exec instead of eval, and therefore output is never printed, and
+statements may be used. This is for things like initializing container
+types. --post is automatically printed and statements are not allowed
+(unless --quiet is used). --loop is implied if either of these options
+are used.
 
 using -s/--split or -F/--field-sep for doing awk things also implies
 --loop. The resulting list is named `f` in the execution environment, in
@@ -68,12 +69,6 @@ when they are evaluated. When the -q/--quiet flag is used, automatic
 printing is suppressed, and expressions are evaluated with exec, so
 statements, such as assignments, may be used. Values may still be
 printed explicitely.
-
-json
-----
-by popular demand, pyfil can parse json objects from stdin with the
--j/--json flag. They are passed into the environment as the `j` object.
-combining with the -l flag will treat stdin as one json object per line.
 
 Home: https://github.com/ninjaaron/pyfil
 ------------------------------------------------------------------------
@@ -128,13 +123,29 @@ class SafeList(collections.UserList):
         except IndexError:
             return ''
 
+    def __iter__(self):
+        return iter(self.data)
 
-def run(expressions, quiet=False, namespace={}):
-    func = exec if quiet else eval
+
+def run(expressions, args, namespace={}):
+    func = exec if args.quiet else eval
     for expr in expressions:
-        value = func(expr, namespace)
-        if not quiet:
-            if isinstance(value, collections.Iterator):
+        try:
+            value = func(expr, namespace)
+        except Exception as e:
+            if args.throw_errors:
+                raise e
+            elif args.silence_errors:
+                continue
+            else:
+                print('\x1b[31mError\x1b[0m:', e)
+                continue
+
+        if not args.quiet:
+            if args.join and isinstance(value, collections.Iterable):
+                print(eval("'"+args.join.replace("'", r"\'")+"'",
+                    {}).join(value))
+            elif isinstance(value, collections.Iterator):
                 for i in value:
                     print(i)
             else:
@@ -164,9 +175,17 @@ def main():
     ap.add_argument('-s', '--split', action='store_true',
                     help="split lines from stdin on whitespace into list 'f'. "
                          'implies --loop')
-    ap.add_argument('-F', '--field-sep',
+    ap.add_argument('-F', '--field-sep', metavar='PATTERN',
                     help="regex used to split lines from stdin into list 'f'. "
                           "implies -l")
+    ap.add_argument('-n', '--join', metavar='STRING',
+                    help='join items in iterables with STRING')
+    ap.add_argument('-E', '--throw-errors', action='store_true',
+                    help='raise errors and in evaluation and stop execution '
+                         '(default: print message to stderr and continue)')
+    ap.add_argument('-S', '--silence-errors', action='store_true',
+                    help='suppress error messages')
+
     a = ap.parse_args()
 
     func = 'exec' if a.quiet else 'eval'
@@ -187,19 +206,20 @@ def main():
             namespace.update(i=i)
             if a.json:
                 namespace.update(j=json.loads(i))
+
+            if a.field_sep:
+                namespace.update(f=SafeList(re.split(a.field_sep, i)))
             elif a.split:
                 namespace.update(f=SafeList(i.split()))
-            elif a.field_sep:
-                namespace.update(f=SafeList(re.split(a.field_sep, i)))
 
-            run(expressions, a.quiet, namespace)
+            run(expressions, a, namespace)
         if a.post:
-            run((a.post,), a.quiet, namespace)
+            run((a.post,), a, namespace)
 
     else:
         if a.json:
             namespace.update(j=json.load(sys.stdin))
-        run(expressions, a.quiet, namespace)
+        run(expressions, a, namespace)
 
 
 if __name__ == '__main__':
