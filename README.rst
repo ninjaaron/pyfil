@@ -142,7 +142,7 @@ available fields.
 Technical note:
     The separator specified with the ``--join`` option is implemented
     internally as ``ast.literal_eval("'''"+STRING.replace("'",
-    r"\'")+"'''", {})``. If one works hard at it, it is possible to pass
+    r"\'")+"'''")``. If one works hard at it, it is possible to pass
     values which will cause pyfil to crash; i.e. patterns ending with a
     backslash. Keep in mind rules about escape squences in the shell and
     in python if you absoulely must have a pattern that terminates with
