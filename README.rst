@@ -22,6 +22,10 @@ for shell one-liners or scripts (like Perl).
 
 pyfil is in pypi (i.e. you can get it easily with pip, if you want)
 
+note:
+  pyfil has only been tested with python3, and only has wheels available
+  for python3
+
 usage
 -----
 
