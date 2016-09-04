@@ -144,7 +144,7 @@ Technical note:
     in python if you absoulely must have a pattern that terminates with
     a backslash. (The reason it is implemented this way is to allow the
     use of escape sequences that are meaningful to the python, but not
-    the shell, such as \n, \t, \x, \u, etc.)
+    the shell, such as \\n, \\t, \\x, \\u, etc.)
 
 suppressing output and using statements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
