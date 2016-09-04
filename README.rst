@@ -7,7 +7,8 @@ feature creep, but I would never do that, because I'm totally not
 jealous that they did it first. :D
 
 Pretty sure there are other projects like this, too. It's sort of an
-obvious thing to try to do.
+obvious thing to try to do: Python one-liners in the spirit of Perl and
+AWK.
 
 ``pyfil`` gives you the ``rep`` command. This is because when I
 initially posted it in #python IRC channel, user [Tritium] (that ray of
@@ -50,7 +51,7 @@ looping over stdin
 ~~~~~~~~~~~~~~~~~~
 one can do simple loops with a generator expression. (note that any
 expression that evaluates to an iterator will print each item on a new
-line)
+line unless the ``--join`` option is specified.)
 
 .. code:: bash
 
@@ -99,7 +100,7 @@ end of previous section or use --help).
 
 .. code:: bash
 
-  > ls -l /|rep -s '"{0}\t{2}\t{8}".format(*f)' 
+  $ ls -l /|rep -s '"{0}\t{2}\t{8}".format(*f)' 
   Error: tuple index out of range
   lrwxrwxrwx	root	bin
   drwxr-xr-x	root	boot/
@@ -136,14 +137,16 @@ available fields.
 
 Technical note:
     The separator specified with the ``--join`` option is implemented
-    internally as ``eval("'"+STRING.replace("'", r"\'")+"'", {})``.
-    ``eval`` is used here so python escape characters such as ``\t`` and
-    ``\n`` may be used. I've used the replace method to try to avoid the
-    possibility of injection here (and set it to eval in its own
-    namespace just in case), but I thought it best to point out that 
+    internally as ``ast.literal_eval("'''"+STRING.replace("'",
+    r"\'")+"'''", {})``. If one works hard at it, it is possible to pass
+    values which will cause pyfil to crash; i.e. patterns ending with a
+    backslash. Keep in mind rules about escape squences in the shell and
+    in python if you absoulely must have a pattern that terminates with
+    a backslash. (The reason it is implemented this way is to allow the
+    use of escape sequences that are meaningful to the python, but not
+    the shell, such as \n, \t, \x, \u, etc.)
 
-
-Suppressing output and using statements
+suppressing output and using statements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 by default, pyfil prints the return value of expressions. Because this
 uses eval() internally to get value, statements may not be used. exec()
@@ -153,9 +156,75 @@ printing is suppressed, and expressions are evaluated with exec, so
 statements, such as assignments, may be used. Values may still be
 printed explicitely.
 
+error handling
+~~~~~~~~~~~~~~
+If pyfil encounters an exception while evaluating user input the default
+is to print the error message to stderr and continue (if looping over
+stdin), as we saw in the section on formatting output. However, errors
+can also be silenced entirely with the ``-S``/``--silence-errors``
+option. In the below example, the first line produces an error, but we
+don't hear about it.
+
+.. code:: bash
+
+  $ ls -l /|rep -sS '"{0}\t{2}\t{8}".format(*f)' 
+  lrwxrwxrwx	root	bin
+  drwxr-xr-x	root	boot/
+  drwxr-xr-x	root	dev/
+  drwxr-xr-x	root	etc/
+  drwxr-xr-x	root	home/
+  lrwxrwxrwx	root	lib
+  ...
+
+Alternatively, errors may be raised when encountered, which will stop
+execution and give a (fairly useless, in this case) traceback. This is
+done with the ``-R``/``--raise-errors`` flag.
+
+.. code:: bash
+
+  $ ls -l /|rep -sR '"{0}\t{2}\t{8}".format(*f)'
+  Traceback (most recent call last):
+    File "/home/ninjaaron/src/py/pyfil/venv/bin/rep", line 9, in <module>
+      load_entry_point('pyfil', 'console_scripts', 'rep')()
+    File "/home/ninjaaron/src/py/pyfil/pyfil/pyfil.py", line 242, in main
+      run(expressions, a, namespace)
+    File "/home/ninjaaron/src/py/pyfil/pyfil/pyfil.py", line 164, in run
+      handle_errors(e, args)
+    File "/home/ninjaaron/src/py/pyfil/pyfil/pyfil.py", line 134, in handle_errors
+      raise exception
+    File "/home/ninjaaron/src/py/pyfil/pyfil/pyfil.py", line 162, in run
+      value = func(expr, namespace)
+    File "<string>", line 1, in <module>
+  IndexError: tuple index out of range
+
+In addition to these two handlers, it is possible to specify a
+rudimentary custom handler with the ``-H``/``--exception-handler``
+flags. The syntax is ``-H 'Exception: expression'``, where ``Exception``
+can be any builtin exception class (including Exception, to catch all
+errors), and ``expression`` is the alternative expression to evaluate
+(and print, if not --quiet).
+
+.. code:: bash
+
+  $ ls -l /|rep -sH 'IndexError: i' '"{0}\t{2}\t{8}".format(*f)'
+  total 32
+  lrwxrwxrwx	root	bin
+  drwxr-xr-x	root	boot/
+  drwxr-xr-x	root	dev/
+  drwxr-xr-x	root	etc/
+  drwxr-xr-x	root	home/
+  lrwxrwxrwx	root	lib
+  ...
+
+In this case, we've chosen to print line without any additional
+formatting. If other errors are encountered, it will fall back to other
+handlers (``-S``, ``-R``, or the default). For more sophisticated error
+handling... Write a real Python script, where you can handle to your
+heart's content.
+
 json
 ~~~~
 by popular demand, pyfil can parse json objects from stdin with the
--j/--json flag. They are passed into the environment as the ``j``
-object.  combining with the -l flag will treat stdin as one json object
-per line.
+``-j``/``--json`` flag. They are passed into the environment as the
+``j`` object.  combining with the --loop flag will treat stdin as one json
+object per line.
