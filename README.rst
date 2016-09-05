@@ -57,8 +57,8 @@ usage
                             (default: print message to stderr and continue)
       -S, --silence-errors  suppress error messages
       -H EXCEPTION_HANDLER, --exception-handler EXCEPTION_HANDLER
-                            specify exception handler with the format `Exeption:
-                            alternative expression to eval`
+                            specify exception handler with the format ``Exeption:
+                            alternative expression to eval``
 
 
 available objects
