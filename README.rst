@@ -39,7 +39,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -l, --loop            for i in sys.stdin: expression
-  -q, --quiet           suppress automatic printing; If set, both statments
+  -q, --quiet           suppress automatic printing; If set, both statements
                         and expressions may be used
   -j, --json            load stdin as json into object 'j'; If used with
                         --loop, treat each line of stdin as a new object
@@ -81,6 +81,16 @@ character. If you do want the newlines, access sys.stdin directly.
 
 stdin inherits the rest of its methods from sys.stdin, so you can use
 stdin.read() to get a string of all lines, if that's what you need.
+
+suppressing output and using statements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+by default, pyfil prints the return value of expressions. Because this
+uses eval() internally to get value, statements may not be used. exec()
+supports statements, but it does not return the value of expressions
+when they are evaluated. When the -q/--quiet flag is used, automatic
+printing is suppressed, and expressions are evaluated with exec, so
+statements, such as assignments, may be used. Values may still be
+printed explicitly.
 
 looping over stdin
 ~~~~~~~~~~~~~~~~~~
@@ -125,17 +135,23 @@ also implies --loop. The resulting list is named ``f`` in the execution
 environment, in quazi-Perl fashion. (oh, and that list is actually a
 subclass of collections.UserList that returns an empty string if the
 index doesn't exist, so it acts more like awk with empty fields, rather
-than throwing and error and interupting iteration).
+than throwing and error and interrupting iteration).
 
-formatting output
-~~~~~~~~~~~~~~~~~
+json
+~~~~
+by popular demand, pyfil can parse json objects from stdin with the
+``-j``/``--json`` flag. They are passed into the environment as the
+``j`` object.  combining with the --loop flag will treat stdin as one json
+object per line.
+
+formatting output (and 'awk stuff')
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 It's probably obvious that the most powerful way to format strings is
-with Python's str.format method and the ``-F`` or ``-s`` options (see
-end of previous section or use --help).
+with Python's str.format method and the ``-F`` or ``-s`` options.
 
 .. code:: bash
 
-  $ ls -l /|rep -s '"{0}\t{2}\t{8}".format(*f)' 
+  $ ls -l /|rep -s '"{0}\t{2}\t{8}".format(*f)'
   Error: tuple index out of range
   lrwxrwxrwx	root	bin
   drwxr-xr-x	root	boot/
@@ -153,7 +169,7 @@ containing arbitrary numbers of fields.
 
 For simpler cases, you may wish to use the ``-n``/``--join`` option,
 which will join any iterables with the specified string before printing,
-and, in the case of the ``f`` list, will replace any none-existant
+and, in the case of the ``f`` list, will replace any none-existent
 fields with an empty string.
 
 .. code:: bash
@@ -175,21 +191,60 @@ Technical note:
     internally as ``ast.literal_eval("'''"+STRING.replace("'",
     r"\'")+"'''")``. If one works hard at it, it is possible to pass
     values which will cause pyfil to crash; i.e. patterns ending with a
-    backslash. Keep in mind rules about escape squences in the shell and
-    in python if you absoulely must have a pattern that terminates with
+    backslash. Keep in mind rules about escape sequences in the shell and
+    in python if you absolutely must have a pattern that terminates with
     a backslash. (The reason it is implemented this way is to allow the
     use of escape sequences that are meaningful to the python, but not
     the shell, such as \\n, \\t, \\x, \\u, etc.)
 
-suppressing output and using statements
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-by default, pyfil prints the return value of expressions. Because this
-uses eval() internally to get value, statements may not be used. exec()
-supports statements, but it does not return the value of expressions
-when they are evaluated. When the -q/--quiet flag is used, automatic
-printing is suppressed, and expressions are evaluated with exec, so
-statements, such as assignments, may be used. Values may still be
-printed explicitely.
+examples
+~~~~~~~~
+
+*I realize that it's much better to do most of these things with the
+original utility. This is just to give some ideas of how to use `rep`*
+
+replace ``fgrep``:
+
+.. code:: bash
+
+  $ rep '(i for i in stdin if "v" in i)'
+  $ ls / | rep -l 'i if "v" in i else None'
+
+
+replace ``grep``:
+
+.. code:: bash
+
+  $ ls / | rep '(i for i in stdin if re.search("^m", i))'
+  $ ls / | rep 'filter(lambda x: re.search("^m", x), stdin)'
+
+replace ``sed 's/...``:
+
+.. code:: bash
+
+  $ ls / | rep -l 're.sub("^([^aeiou][aeiou][^aeiou]\W)", lambda m: m.group(0).upper(), i)'
+  BIN@
+  boot/
+  data/
+  DEV/
+  etc/
+  ...
+
+This example illustrates that, while you might normally prefer ``sed``
+for replacement tasks, the ability to define a replacement function with
+``re.sub`` does offer some interesting possibilities. Indeed, someone
+familiar with coreutils should never prefer to do something they already
+comfortable doing the traditional way with ``rep`` (coreutils are
+heavily optimized). Python is interesting for this use-case because it
+offers great logic, anonymous functions and all kinds of other goodies
+that only full-fledged, modern programming language can offer. Use
+coreutiles for the jobs they were designed to excel in. Use ``rep`` to
+do whatever they can't... and seriously, how will coreutils do this?:
+
+.. code:: bash
+
+  $ wget -qO- http://pypi.python.org/pypi/pyfil/json/ | rep -j 'j["urls"][0]["filename"]'
+  pyfil-0.5-py3-none-any.whl
 
 error handling
 ~~~~~~~~~~~~~~
@@ -257,9 +312,11 @@ handlers (``-S``, ``-R``, or the default). For more sophisticated error
 handling... Write a real Python script, where you can handle to your
 heart's content.
 
-json
-~~~~
-by popular demand, pyfil can parse json objects from stdin with the
-``-j``/``--json`` flag. They are passed into the environment as the
-``j`` object.  combining with the --loop flag will treat stdin as one json
-object per line.
+Also note that this case is possible to handle with a test instead of an
+exception handler because ``f`` is a special list that will return an
+empty string instead of throw an index error if the index is out of
+range:
+
+``ls -l / | rep -s '"{0}\t{2}\t{8}".format(*f) if f[2] else i'``
+
+Easy-peasy.
