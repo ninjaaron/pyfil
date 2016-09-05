@@ -155,7 +155,7 @@ def main():
                     help='suppress error messages')
     ap.add_argument('-H', '--exception-handler',
                     help='specify exception handler with the format '
-                         '`Exeption: alternative expression to eval`')
+                         '`Exception: alternative expression to eval`')
 
     a = ap.parse_args()
 
