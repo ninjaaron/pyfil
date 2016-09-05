@@ -31,36 +31,35 @@ usage
 --help
 
 .. code::
-  $ rep -h
-  usage: rep [-h] [-l] [-q] [-j] [-b PRE] [-e POST] [-s] [-F PATTERN]
-             [-n STRING] [-R] [-S] [-H EXCEPTION_HANDLER]
-             expression [expression ...]
+    usage: rep [-h] [-l] [-q] [-j] [-b PRE] [-e POST] [-s] [-F PATTERN]
+               [-n STRING] [-R] [-S] [-H EXCEPTION_HANDLER]
+               expression [expression ...]
 
-  positional arguments:
-    expression            expression(s) to be executed.
+    positional arguments:
+      expression            expression(s) to be executed.
 
-  optional arguments:
-    -h, --help            show this help message and exit
-    -l, --loop            for i in sys.stdin: expression
-    -q, --quiet           surpress automatic printing; If set, both statments
-                          and expressions may be used
-    -j, --json            load stdin as json into object 'j'; If used with
-                          --loop, treat each line of stdin as a new object
-    -b PRE, --pre PRE     expression to evaluate before the loop
-    -e POST, --post POST  expression to evaluate after the loop
-    -s, --split           split lines from stdin on whitespace into list 'f'.
-                          implies --loop
-    -F PATTERN, --field-sep PATTERN
-                          regex used to split lines from stdin into list 'f'.
-                          implies -l
-    -n STRING, --join STRING
-                          join items in iterables with STRING
-    -R, --raise-errors    raise errors and in evaluation and stop execution
-                          (default: print message to stderr and continue)
-    -S, --silence-errors  suppress error messages
-    -H EXCEPTION_HANDLER, --exception-handler EXCEPTION_HANDLER
-                          specify exception handler with the format `Exeption:
-                          alternative expression to eval`
+    optional arguments:
+      -h, --help            show this help message and exit
+      -l, --loop            for i in sys.stdin: expression
+      -q, --quiet           surpress automatic printing; If set, both statments
+                            and expressions may be used
+      -j, --json            load stdin as json into object 'j'; If used with
+                            --loop, treat each line of stdin as a new object
+      -b PRE, --pre PRE     expression to evaluate before the loop
+      -e POST, --post POST  expression to evaluate after the loop
+      -s, --split           split lines from stdin on whitespace into list 'f'.
+                            implies --loop
+      -F PATTERN, --field-sep PATTERN
+                            regex used to split lines from stdin into list 'f'.
+                            implies -l
+      -n STRING, --join STRING
+                            join items in iterables with STRING
+      -R, --raise-errors    raise errors and in evaluation and stop execution
+                            (default: print message to stderr and continue)
+      -S, --silence-errors  suppress error messages
+      -H EXCEPTION_HANDLER, --exception-handler EXCEPTION_HANDLER
+                            specify exception handler with the format `Exeption:
+                            alternative expression to eval`
 
 
 available objects
