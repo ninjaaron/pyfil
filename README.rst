@@ -1,14 +1,6 @@
 pyfil
 =====
-This ain't the first project of this kind, and it won't be the last, but
-this one is special because it's all mine. ``pyeval`` is a more
-mature project of a similar sort. Some might accuse ``pyeval`` of
-feature creep, but I would never do that, because I'm totally not
-jealous that they did it first. :D
-
-Pretty sure there are other projects like this, too. It's sort of an
-obvious thing to try to do: Python one-liners in the spirit of Perl and
-AWK.
+Python one-liners in the spirit of Perl and AWK.
 
 ``pyfil`` gives you the ``rep`` command. This is because when I
 initially posted it in #python IRC channel, user [Tritium] (that ray of
