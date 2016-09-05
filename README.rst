@@ -36,23 +36,6 @@ usage
              [-n STRING] [-R] [-S] [-H EXCEPTION_HANDLER]
              expression [expression ...]
 
-  Evaluate python expressions. Print the return value. If the return value
-  is an iterator, print each item on its own line.
-
-  Automatically imports (unless overridden in ~/.config/pyfil-env.py):
-      sys, os, re, math, pprint from pprint, timeit from timeit and
-      strftime from time.
-
-  If you'd like to specify a custom execution environment for rep, create
-  ~/.config/pyfil-env.py and put things in it.
-
-  The execution environment also has a special object for stdin,
-  creatively named ``stdin``. This differs from sys.stdin in that it
-  rstrips (aka chomps) all the lines when you iterate over it, and it has
-  a property, ``stdin.l``, which returns a list of the (rstripped) lines.
-
-  Home: https://github.com/ninjaaron/pyfil
-
   positional arguments:
     expression            expression(s) to be executed.
 
