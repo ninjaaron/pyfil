@@ -136,9 +136,9 @@ Therefore, the above loop can also be written thusly:
 actions to run before or after the loop. Note that the --pre option is
 run with exec instead of eval, and therefore output is never printed,
 and statements may be used. This is for things like initializing
-container types. --post is automatically printed and statements are not
-allowed (unless --quiet is used). --loop is implied if either of these
-options are used.
+container types or importing additional libraries. --post is
+automatically printed and statements are not allowed (unless --quiet is
+used). --loop is implied if either of these options are used.
 
 Using ``-s``/``--split`` or ``-F``/``--field-sep`` for doing awk things
 also implies --loop. The resulting list is named ``f`` in the execution
