@@ -11,9 +11,9 @@ If you'd like to specify a custom execution environment for rep, create
 ~/.config/pyfil-env.py and put things in it.
 
 The execution environment also has a special object for stdin,
-creatively named ``stdin``. This differs from sys.stdin in that it
+creatively named "stdin". This differs from sys.stdin in that it
 rstrips (aka chomps) all the lines when you iterate over it, and it has
-a property, ``stdin.l``, which returns a list of the (rstripped) lines.
+a property, stdin.l, which returns a list of the (rstripped) lines.
 
 Home: https://github.com/ninjaaron/pyfil
 '''
