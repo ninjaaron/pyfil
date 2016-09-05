@@ -131,7 +131,7 @@ def main():
     ap.add_argument('-l', '--loop', action='store_true',
                     help='for i in sys.stdin: expression')
     ap.add_argument('-q', '--quiet', action='store_true',
-                    help='surpress automatic printing; If set, both statments '
+                    help='suppress automatic printing; If set, both statments '
                     'and expressions may be used')
     ap.add_argument('-j', '--json', action='store_true',
                     help="load stdin as json into object 'j'; If used with "

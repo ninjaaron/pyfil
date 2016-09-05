@@ -39,7 +39,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -l, --loop            for i in sys.stdin: expression
-  -q, --quiet           surpress automatic printing; If set, both statments
+  -q, --quiet           suppress automatic printing; If set, both statments
                         and expressions may be used
   -j, --json            load stdin as json into object 'j'; If used with
                         --loop, treat each line of stdin as a new object
