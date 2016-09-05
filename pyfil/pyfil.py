@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 '''
-------------------------------------------------------------------------
 Evaluate python expressions. Print the return value. If the return value
 is an iterator, print each item on its own line.
 
-available objects
------------------
 Automatically imports (unless overridden in ~/.config/pyfil-env.py):
     sys, os, re, math, pprint from pprint, timeit from timeit and
     strftime from time.
@@ -14,64 +11,11 @@ If you'd like to specify a custom execution environment for rep, create
 ~/.config/pyfil-env.py and put things in it.
 
 The execution environment also has a special object for stdin,
-creatively named `stdin`. This differs from sys.stdin in that it rstrips
-(aka chomps) all the lines when you iterate over it, and it has a
-property, stdin.l, which returns a list of the (rstripped) lines. pyfil
-is quite bullish about using rstrip because python's print function will
-supply an additional newline, and if you just want the value of the text
-in the line, you almost never want the newline character. If you do want
-the newlines, access sys.stdin directly.
-
-stdin inherits the rest of its methods from sys.stdin, so you can use
-stdin.read() to get a string of all lines, if that's what you need.
-
-looping over stdin
-------------------
-one can do simple loops with a generator expression:
-
-    $ ls / | rep '(i.upper() for i in stdin)'
-    BIN@
-    BOOT/
-    DEV/
-    ETC/
-    HOME/
-    ...
-
-However, the -l/--loop flag rep loops over stdin in a context like this:
-
-    for i in map(str.rstrip, sys.stdin):
-        expressions
-
-Therefore, the above loop can also be written thusly:
-
-    $ ls / | rep -l 'i.upper()'
-
---pre and --post (-b and -e) options can be used to specify actions to
-run before or after the loop. Note that the --pre option is run with
-exec instead of eval, and therefore output is never printed, and
-statements may be used. This is for things like initializing container
-types. --post is automatically printed and statements are not allowed
-(unless --quiet is used). --loop is implied if either of these options
-are used.
-
-using -s/--split or -F/--field-sep for doing awk things also implies
---loop. The resulting list is named `f` in the execution environment, in
-quazi-perl fashion. (oh, and that list is actually a subclass of
-collections.UserList that returns an empty string if the index doesn't
-exist, so it acts more like awk with empty fields).
-
-Suppressing output and using statements
----------------------------------------
-by default, pyfil prints the return value of expressions. Because this
-uses eval() internally to get value, statements may not be used. exec()
-supports statements, but it does not return the value of expressions
-when they are evaluated. When the -q/--quiet flag is used, automatic
-printing is suppressed, and expressions are evaluated with exec, so
-statements, such as assignments, may be used. Values may still be
-printed explicitely.
+creatively named ``stdin``. This differs from sys.stdin in that it
+rstrips (aka chomps) all the lines when you iterate over it, and it has
+a property, ``stdin.l``, which returns a list of the (rstripped) lines.
 
 Home: https://github.com/ninjaaron/pyfil
-------------------------------------------------------------------------
 '''
 import collections
 import sys
