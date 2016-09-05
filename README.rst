@@ -18,6 +18,24 @@ note:
   pyfil has only been tested with python3, and only has wheels available
   for python3
 
+
+similar projects
+~~~~~~~~~~~~~~~~
+pyfil ain't the first project to try something like this. Here are some
+other cracks at this problem:
+
+- oneliner_
+- pyp_
+- pyle_
+- funcpy_
+- red_
+
+.. _oneliner: http://python-oneliner.readthedocs.io/en/latest/
+.. _pyp: http://code.google.com/p/pyp
+.. _pyle: https://github.com/aljungberg/pyle
+.. _funcpy: http://www.pixelbeat.org/scripts/funcpy
+.. _red: https://bitbucket.org/johannestaas/red
+
 usage
 -----
 
