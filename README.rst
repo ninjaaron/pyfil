@@ -52,7 +52,7 @@ optional arguments:
                         implies -l
   -n STRING, --join STRING
                         join items in iterables with STRING
-  -R, --raise-errors    raise errors and in evaluation and stop execution
+  -R, --raise-errors    raise errors in evaluation and stop execution
                         (default: print message to stderr and continue)
   -S, --silence-errors  suppress error messages
   -H EXCEPTION_HANDLER, --exception-handler EXCEPTION_HANDLER

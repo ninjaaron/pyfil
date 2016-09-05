@@ -149,7 +149,7 @@ def main():
     ap.add_argument('-n', '--join', metavar='STRING',
                     help='join items in iterables with STRING')
     ap.add_argument('-R', '--raise-errors', action='store_true',
-                    help='raise errors and in evaluation and stop execution '
+                    help='raise errors in evaluation and stop execution '
                          '(default: print message to stderr and continue)')
     ap.add_argument('-S', '--silence-errors', action='store_true',
                     help='suppress error messages')
