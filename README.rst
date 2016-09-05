@@ -28,7 +28,6 @@ note:
 
 usage
 -----
---help
 
     usage: rep [-h] [-l] [-q] [-j] [-b PRE] [-e POST] [-s] [-F PATTERN]
                [-n STRING] [-R] [-S] [-H EXCEPTION_HANDLER]
