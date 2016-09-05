@@ -203,11 +203,18 @@ examples
 *I realize that it's much better to do most of these things with the
 original utility. This is just to give some ideas of how to use `rep`*
 
+replace ``wc -l``:
+
+.. code:: bash
+
+  $ ls / | rep 'len(stdin.l)'
+  20
+
 replace ``fgrep``:
 
 .. code:: bash
 
-  $ rep '(i for i in stdin if "v" in i)'
+  $ ls / | rep '(i for i in stdin if "v" in i)'
   $ ls / | rep -l 'i if "v" in i else None'
 
 
@@ -245,6 +252,17 @@ do whatever they can't... and seriously, how will coreutils do this?:
 
   $ wget -qO- http://pypi.python.org/pypi/pyfil/json/ | rep -j 'j["urls"][0]["filename"]'
   pyfil-0.5-py3-none-any.whl
+
+
+Other things which might be difficult with coreutils:
+
+.. code:: bash
+
+  $ ls / | rep -n '  ' 'reversed(stdin.l)'
+  var/  usr/  tmp/  sys/  srv/  sbin@  run/  root/  proc/  opt/  ...
+  $ # ^^ also, `ls /|rep -n '  ' 'stdin.l[::-1]'
+  $
+  $ 
 
 error handling
 ~~~~~~~~~~~~~~

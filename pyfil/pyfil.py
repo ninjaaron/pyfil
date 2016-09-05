@@ -77,10 +77,9 @@ def handle_errors(exception, args):
     if args.raise_errors:
         raise exception
     elif args.silence_errors:
-        return
+        pass
     else:
-        print('\x1b[31mError\x1b[0m:', exception)
-        return
+        print('\x1b[31mError\x1b[0m:', exception, file=sys.stderr)
 
 
 def run(expressions, args, namespace={}):
