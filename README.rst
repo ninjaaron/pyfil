@@ -28,6 +28,7 @@ note:
 
 usage
 -----
+--help
 
 .. code:: bash
   $ rep -h
