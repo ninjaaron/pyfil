@@ -108,15 +108,17 @@ def run(expressions, args, namespace={}):
                 continue
 
         if not args.quiet:
-            if args.join is not None and isinstance(value,
-                                                    collections.Iterable):
-                print(ast.literal_eval("'''" + args.join.replace("'", r"\'") +
-                    "'''").join(value))
-            elif isinstance(value, collections.Iterator):
-                for i in value:
-                    print(i)
-            else:
-                print(value) if value is not None else ...
+            namespace.update(i=value)
+
+    if not args.quiet:
+        if args.join is not None and isinstance(value, collections.Iterable):
+            print(ast.literal_eval("'''" + args.join.replace("'", r"\'") +
+                "'''").join(value))
+        elif isinstance(value, collections.Iterator):
+            for i in value:
+                print(i)
+        else:
+            print(value) if value is not None else ...
 
 
 def main():

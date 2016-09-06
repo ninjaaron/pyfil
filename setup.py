@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pyfil',
-    version='0.7',
+    version='0.8',
     author='Aaron Christianson',
     license='BSD',
     author_email='ninjaaron@gmail.com',
