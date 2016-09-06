@@ -10,6 +10,6 @@ setup(
     description='Python one-liners in the shell in the spirit of Perl and AWK',
     long_description=open('README.rst').read(),
     keywords='evaluate',
-    py_modules=['pyfil.py'],
+    packages=['pyfil'],
     entry_points={'console_scripts': ['rep=pyfil.pyfil:main']},
 )
