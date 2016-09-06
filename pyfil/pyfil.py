@@ -149,7 +149,7 @@ def main():
                     'and --quite is not used, the value of the previous '
                     "expression is available as 'x' in the following "
                     'expression. if --quite is used, all assignment must be '
-                    'explicite.')
+                    'explicit.')
     ap.add_argument('-l', '--loop', action='store_true',
                     help='for i in sys.stdin: expression')
     ap.add_argument('-q', '--quiet', action='store_true',
