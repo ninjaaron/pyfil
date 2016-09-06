@@ -82,6 +82,16 @@ def handle_errors(exception, args):
         print('\x1b[31mError\x1b[0m:', exception, file=sys.stderr)
 
 
+def print_obj(obj):
+    if isinstance(obj, str):
+        print(obj)
+    else:
+        try:
+            print(json.dumps(obj, ensure_ascii=False))
+        except TypeError:
+            print(obj)
+
+
 def run(expressions, args, namespace={}):
     func = exec if args.quiet else eval
     for expr in expressions:
@@ -95,30 +105,32 @@ def run(expressions, args, namespace={}):
                 try:
                     value = func(handler, namespace)
                 except Exception as e:
-                    handle_errors(e, args)
+                    value = handle_errors(e, args)
                     continue
             except Exception as e:
-                handle_errors(e, args)
+                value = handle_errors(e, args)
                 continue
         else:
             try:
                 value = func(expr, namespace)
             except Exception as e:
-                handle_errors(e, args)
+                value = handle_errors(e, args)
                 continue
 
         if not args.quiet:
-            namespace.update(i=value)
+            namespace.update(x=value)
 
     if not args.quiet:
         if args.join is not None and isinstance(value, collections.Iterable):
             print(ast.literal_eval("'''" + args.join.replace("'", r"\'") +
                 "'''").join(value))
+        elif value is None:
+            pass
         elif isinstance(value, collections.Iterator):
             for i in value:
-                print(i)
+                print_obj(i)
         else:
-            print(value) if value is not None else ...
+            print_obj(value)
 
 
 def main():

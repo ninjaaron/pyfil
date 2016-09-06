@@ -12,15 +12,21 @@ something, like the Python REPL, but it also has some special flags for
 iterating on stdin and parsing JSON, which make it useful as a filter
 for shell one-liners or scripts (like Perl).
 
+As a more modern touch, if the return value is a container type, python
+will attempt to serialize it as json before printing, so you can pipe
+output into other tools that deal with json or store it to a file for
+later use.
+
 pyfil is in pypi (i.e. you can get it easily with pip, if you want)
 
 note:
   pyfil has only been tested with python3, and only has wheels available
   for python3
 
+.. contents::
 
 similar projects
-~~~~~~~~~~~~~~~~
+----------------
 pyfil ain't the first project to try something like this. Here are some
 other cracks at this problem:
 
@@ -29,12 +35,16 @@ other cracks at this problem:
 - pyle_
 - funcpy_
 - red_
+- pyeval_
+- quickpy_
 
 .. _oneliner: http://python-oneliner.readthedocs.io/en/latest/
 .. _pyp: http://code.google.com/p/pyp
 .. _pyle: https://github.com/aljungberg/pyle
 .. _funcpy: http://www.pixelbeat.org/scripts/funcpy
 .. _red: https://bitbucket.org/johannestaas/red
+.. _pyeval: https://bitbucket.org/nejucomo/pyeval/wiki/Home
+.. _quickpy: https://github.com/slezica/quick-py
 
 usage
 -----
@@ -69,7 +79,6 @@ optional arguments:
                         specify exception handler with the format ``Exception:
                         alternative expression to eval``
 
-
 available objects
 ~~~~~~~~~~~~~~~~~
 Automatically imports (unless overridden in ~/.config/pyfil-env.py):
@@ -92,15 +101,76 @@ character. If you do want the newlines, access sys.stdin directly.
 stdin inherits the rest of its methods from sys.stdin, so you can use
 stdin.read() to get a string of all lines, if that's what you need.
 
-suppressing output and using statements
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-by default, pyfil prints the return value of expressions. Because this
-uses eval() internally to get value, statements may not be used. exec()
-supports statements, but it does not return the value of expressions
-when they are evaluated. When the -q/--quiet flag is used, automatic
-printing is suppressed, and expressions are evaluated with exec, so
-statements, such as assignments, may be used. Values may still be
-printed explicitly.
+printing conventions, suppressing output and using statements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+By default, pyfil prints the return value of expressions. Different
+types of objects use different printing conventions.
+
+- ``None`` does not print (as in the REPL)
+- strings are sent directly to to ``print()``
+- iterators (not other iterables) print each item on a new line.
+- other objects are serialized as json. If an object cannot be
+  serialized as json, it is sent directly to print().
+- all of these are overridden by --join
+
+Iterators will also try to serialize each returned object as json if
+they are not strings.
+
+examples:
+
+.. code:: bash
+
+  $ # None gets skipped
+  $ rep None
+  $ # numbers print as numbers
+  $ rep math.pi
+  3.141592653589793
+  $ # strings just print...
+  $ rep sys.platfrom
+  linux
+  $ # objects try to print as json
+  $ rep sys.path
+  ["/home/ninjaaron/src/py/pyfil/venv/bin", "/home/ninjaaron/src/py/pyfil", "/usr/lib/python35.zip", "/usr/lib/python3.5", "/usr/lib/python3.5/plat-linux", "/usr/lib/python3.5/lib-dynload", "/home/ninjaaron/src/py/pyfil/venv/lib/python3.5/site-packages"]
+  $ rep '{i: n for n, i in enumerate(sys.path)}'
+  {"/usr/lib/python3.5": 3, "/home/ninjaaron/src/py/pyfil/venv/lib/python3.5/site-packages": 6, "/usr/lib/python3.5/lib-dynload": 5, "/usr/lib/python3.5/plat-linux": 4, "/home/ninjaaron/src/py/pyfil": 1, "/usr/lib/python35.zip": 2, "/home/ninjaaron/src/py/pyfil/venv/bin": 0}
+  $ # unless they can't
+  $ rep list
+  <class 'list'>
+  $ # iterators print each item on a new line, applying the same conventions
+  $ rep 'iter(sys.path)'
+  /home/ninjaaron/src/py/pyfil/venv/bin
+  /home/ninjaaron/src/py/pyfil
+  /usr/lib/python35.zip
+  /usr/lib/python3.5
+  /usr/lib/python3.5/plat-linux
+  /usr/lib/python3.5/lib-dynload
+  /home/ninjaaron/src/py/pyfil/venv/lib/python3.5/site-package
+  $ rep '(i.split('/')[1:] for i in sys.path)'
+  ["home", "ninjaaron", "src", "py", "pyfil", "venv", "bin"]
+  ["home", "ninjaaron", "src", "py", "pyfil"]
+  ["usr", "lib", "python35.zip"]
+  ["usr", "lib", "python3.5"]
+  ["usr", "lib", "python3.5", "plat-linux"]
+  ["usr", "lib", "python3.5", "lib-dynload"]
+  ["home", "ninjaaron", "src", "py", "pyfil", "venv", "lib", "python3.5", "site-packages"]
+
+Because these defaults use eval() internally to get value of
+expressions, statements may not be used. exec() supports statements, but
+it does not return the value of expressions when they are evaluated.
+When the -q/--quiet flag is used, automatic printing is suppressed, and
+expressions are evaluated with exec, so statements, such as assignments,
+may be used. Values may still be printed explicitly.
+
+using multiple expression arguments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``rep`` can take as many expressions as desired as arguments. When used
+with --quiet, this works pretty much as expected, and assignment must be
+done manually.
+
+Without --quiet, the return value of each expression is assigned to the
+variable ``x``, which can be used in the next expression. The final
+value of ``x`` is what is ultimately printed, not any intermediate
+values.
 
 looping over stdin
 ~~~~~~~~~~~~~~~~~~
@@ -147,8 +217,8 @@ subclass of collections.UserList that returns an empty string if the
 index doesn't exist, so it acts more like awk with empty fields, rather
 than throwing and error and interrupting iteration).
 
-json
-~~~~
+json input
+~~~~~~~~~~
 by popular demand, pyfil can parse json objects from stdin with the
 ``-j``/``--json`` flag. They are passed into the environment as the
 ``j`` object.  combining with the --loop flag will treat stdin as one json
