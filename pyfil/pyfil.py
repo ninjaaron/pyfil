@@ -13,6 +13,7 @@ creatively named "stdin". This differs from sys.stdin in that it
 rstrips (aka chomps) all the lines when you iterate over it, and it has
 a property, stdin.l, which returns a list of the (rstripped) lines.
 
+
 Home: https://github.com/ninjaaron/pyfil
 '''
 import collections
@@ -144,7 +145,11 @@ def main():
             formatter_class=argparse.RawDescriptionHelpFormatter)
 
     ap.add_argument('expression', nargs='+', help='expression(s) to be '
-                    'executed.')
+                    'executed. If multiple expression arguments are given, '
+                    'and --quite is not used, the value of the previous '
+                    "expression is available as 'x' in the following "
+                    'expression. if --quite is used, all assignment must be '
+                    'explicite.')
     ap.add_argument('-l', '--loop', action='store_true',
                     help='for i in sys.stdin: expression')
     ap.add_argument('-q', '--quiet', action='store_true',
