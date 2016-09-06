@@ -10,7 +10,7 @@ exec(fastep.read(), namespace)
 
 setup(
     name='pyfil',
-    version='0.10',
+    version='0.11',
     author='Aaron Christianson',
     license='BSD',
     author_email='ninjaaron@gmail.com',
