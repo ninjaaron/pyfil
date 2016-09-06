@@ -161,7 +161,7 @@ examples:
 
 Most JSON is also valid Python, but be aware that you may occasionally
 see ``null`` instead of ``None`` along with ``true`` and ``false``
-instead of ``True`` and ``False``. I guess that a risk I'm willing to
+instead of ``True`` and ``False``. I guess that's a risk I'm willing to
 take.
 
 suppressing output and using statements

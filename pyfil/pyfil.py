@@ -76,6 +76,7 @@ class SafeList(collections.UserList):
 
 
 def handle_errors(exception, args):
+    'stupid simple error handling'
     if args.raise_errors:
         raise exception
     elif args.silence_errors:
@@ -85,6 +86,7 @@ def handle_errors(exception, args):
 
 
 def print_obj(obj):
+    "print strings, serialize other stuff to json, or don't"
     if isinstance(obj, str):
         print(obj)
     else:
@@ -177,12 +179,11 @@ def main():
     func = 'exec' if a.quiet else 'eval'
     expressions = [compile(e, '<string>', func) for e in a.expression]
     user_env = os.environ['HOME'] + '/.config/pyfil-env.py'
-    namespace = NameSpace()
-    namespace.update(__builtins__)
+
+    namespace = NameSpace(__builtins__)
+    namespace.update(stdin=StdIn())
     if os.path.exists(user_env):
         exec(open(user_env).read(), namespace)
-
-    namespace.update(stdin=StdIn())
 
     if a.loop or a.post or a.split or a.field_sep:
         if a.pre:
