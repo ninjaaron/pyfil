@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pyfil',
-    version='0.8',
+    version='0.9',
     author='Aaron Christianson',
     license='BSD',
     author_email='ninjaaron@gmail.com',
@@ -10,6 +10,6 @@ setup(
     description='Python one-liners in the shell in the spirit of Perl and AWK',
     long_description=open('README.rst').read(),
     keywords='evaluate',
-    packages=['pyfil'],
+    py_modules=['pyfil.py'],
     entry_points={'console_scripts': ['rep=pyfil.pyfil:main']},
 )

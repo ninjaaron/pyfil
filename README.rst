@@ -9,13 +9,17 @@ print loop). That is more or less the case. ``rep`` reads python
 expressions at the command line, evaluates them and prints them to
 stdout. It might be interesting as a quick calculator or to test
 something, like the Python REPL, but it also has some special flags for
-iterating on stdin and parsing JSON, which make it useful as a filter
+iterating on stdin, which make it useful as a filter
 for shell one-liners or scripts (like Perl).
 
 As a more modern touch, if the return value is a container type, python
 will attempt to serialize it as json before printing, so you can pipe
-output into other tools that deal with json or store it to a file for
-later use.
+output into other tools that deal with json, store it to a file for
+later use, or send it over http. This, combined with the abilitiy to
+read json from stdin (with --json) make a good translator between the
+web, which tends to speak json these days, and the posix environment,
+which tends to think about data in terms of lines in a file (frequently
+with multiple fields per line).
 
 pyfil is in pypi (i.e. you can get it easily with pip, if you want)
 
@@ -81,13 +85,10 @@ optional arguments:
 
 available objects
 ~~~~~~~~~~~~~~~~~
-Automatically imports (unless overridden in ~/.config/pyfil-env.py):
+``rep`` automatically imports any modules used in expressions.
 
-``sys``, ``os``, ``re``, ``math``, ``pprint from pprint``, ``timeit
-from timeit`` and ``strftime from time``.
-
-If you'd like to specify a custom execution environment for rep, create
-~/.config/pyfil-env.py and put things in it.
+If you'd like to create any other objects to use in the execution
+environment ~/.config/pyfil-env.py and put things in it.
 
 The execution environment also has a special object for stdin,
 creatively named ``stdin``. This differs from sys.stdin in that it
@@ -101,8 +102,10 @@ character. If you do want the newlines, access sys.stdin directly.
 stdin inherits the rest of its methods from sys.stdin, so you can use
 stdin.read() to get a string of all lines, if that's what you need.
 
-printing conventions, suppressing output and using statements
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+output
+~~~~~~
+automatic printing
+..................
 By default, pyfil prints the return value of expressions. Different
 types of objects use different printing conventions.
 
@@ -153,6 +156,13 @@ examples:
   ["usr", "lib", "python3.5", "lib-dynload"]
   ["home", "ninjaaron", "src", "py", "pyfil", "venv", "lib", "python3.5", "site-packages"]
 
+Most JSON is also valid Python, but be aware that you may occasionally
+see ``null`` instead of ``None`` along with ``true`` and ``false``
+instead of ``True`` and ``False``. I guess that a risk I'm willing to
+take.
+
+suppressing output and using statements
+.......................................
 Because these defaults use eval() internally to get value of
 expressions, statements may not be used. exec() supports statements, but
 it does not return the value of expressions when they are evaluated.
@@ -170,6 +180,14 @@ Without --quiet, the return value of each expression is assigned to the
 variable ``x``, which can be used in the next expression. The final
 value of ``x`` is what is ultimately printed, not any intermediate
 values.
+
+.. code:: bash
+
+  $ rep 'reversed("abcd")' '(i.upper() for i in x)'
+  D
+  C
+  B
+  A
 
 looping over stdin
 ~~~~~~~~~~~~~~~~~~
@@ -207,7 +225,9 @@ run with exec instead of eval, and therefore output is never printed,
 and statements may be used. This is for things like initializing
 container types or importing additional libraries. --post is
 automatically printed and statements are not allowed (unless --quiet is
-used). --loop is implied if either of these options are used.
+used). --loop is implied if ``--post`` is used. ``--pre`` can be used
+without a --loop to import additional modules (or whatever else you may
+want to do with a statement).
 
 Using ``-s``/``--split`` or ``-F``/``--field-sep`` for doing awk things
 also implies --loop. The resulting list is named ``f`` in the execution
@@ -219,7 +239,7 @@ than throwing and error and interrupting iteration).
 json input
 ~~~~~~~~~~
 ``rep`` can parse json objects from stdin with the ``-j``/``--json``
-flag.  They are passed into the environment as the ``j`` object.
+flag. They are passed into the environment as the ``j`` object.
 combining with the --loop flag will treat stdin as one json object per
 line.
 

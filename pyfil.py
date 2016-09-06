@@ -3,12 +3,10 @@
 Evaluate python expressions. Print the return value. If the return value
 is an iterator, print each item on its own line.
 
-Automatically imports (unless overridden in ~/.config/pyfil-env.py):
-    sys, os, re, math, pprint from pprint, timeit from timeit and
-    strftime from time.
+rep automatically imports any modules used in expressions.
 
-If you'd like to specify a custom execution environment for rep, create
-~/.config/pyfil-env.py and put things in it.
+If you'd like to create any other objects to use in the execution
+environment ~/.config/pyfil-env.py and put things in it.
 
 The execution environment also has a special object for stdin,
 creatively named "stdin". This differs from sys.stdin in that it
@@ -23,9 +21,7 @@ import json
 import os
 import re
 import ast
-import builtins
 from functools import update_wrapper
-from . import env
 
 
 class reify(object):
@@ -40,6 +36,12 @@ class reify(object):
         val = self.wrapped(inst)
         setattr(inst, self.wrapped.__name__, val)
         return val
+
+
+class NameSpace(dict):
+    'namespace that imports modules lazily.'
+    def __missing__(self, name):
+        return __import__(name)
 
 
 class StdIn:
@@ -101,7 +103,7 @@ def run(expressions, args, namespace={}):
                     args.exception_handler.split(':', maxsplit=1))
             try:
                 value = func(expr, namespace)
-            except builtins.__dict__[exception]:
+            except __builtins__[exception]:
                 try:
                     value = func(handler, namespace)
                 except Exception as e:
@@ -150,7 +152,7 @@ def main():
                     help="load stdin as json into object 'j'; If used with "
                     '--loop, treat each line of stdin as a new object')
     ap.add_argument('-b', '--pre',
-                    help='expression to evaluate before the loop')
+                    help='statement to evaluate before expressions')
     ap.add_argument('-e', '--post',
                     help='expression to evaluate after the loop')
     ap.add_argument('-s', '--split', action='store_true',
@@ -175,15 +177,14 @@ def main():
     func = 'exec' if a.quiet else 'eval'
     expressions = [compile(e, '<string>', func) for e in a.expression]
     user_env = os.environ['HOME'] + '/.config/pyfil-env.py'
+    namespace = NameSpace()
+    namespace.update(__builtins__)
     if os.path.exists(user_env):
-        namespace = {}
         exec(open(user_env).read(), namespace)
-    else:
-        namespace = env.__dict__
 
     namespace.update(stdin=StdIn())
 
-    if a.loop or a.pre or a.post or a.split or a.field_sep:
+    if a.loop or a.post or a.split or a.field_sep:
         if a.pre:
             exec(a.pre, namespace)
         for i in map(str.rstrip, sys.stdin):
@@ -201,6 +202,8 @@ def main():
             run((a.post,), a, namespace)
 
     else:
+        if a.pre:
+            exec(a.pre, namespace)
         if a.json:
             namespace.update(j=json.load(sys.stdin))
         run(expressions, a, namespace)
