@@ -323,8 +323,8 @@ replace ``grep``:
 
 .. code:: bash
 
-  $ ls / | rep 'filter(lambda x: re.search("m", x), stdin)'
-  $ ls / | rep -lS 're.search("m", i).string)'
+  $ ls / | rep 'filter(lambda x: re.search("^m", x), stdin)'
+  $ ls / | rep -lS 're.search("^m", i).string)'
   $ # using the -S option to suppress a ton of error messages
 
 replace ``sed 's/...``:
