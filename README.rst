@@ -42,6 +42,9 @@ other cracks at this problem:
 - pyeval_
 - quickpy_
 
+Don't worry. I've stolen some of their best ideas already, and I will go
+on stealing as long as it takes!
+
 .. _oneliner: http://python-oneliner.readthedocs.io/en/latest/
 .. _pyp: http://code.google.com/p/pyp
 .. _pyle: https://github.com/aljungberg/pyle
@@ -223,11 +226,10 @@ Therefore, the above loop can also be written thusly:
 actions to run before or after the loop. Note that the --pre option is
 run with exec instead of eval, and therefore output is never printed,
 and statements may be used. This is for things like initializing
-container types or importing additional libraries. --post is
-automatically printed and statements are not allowed (unless --quiet is
-used). --loop is implied if ``--post`` is used. ``--pre`` can be used
-without a --loop to import additional modules (or whatever else you may
-want to do with a statement).
+container types. --post is automatically printed and statements are not
+allowed (unless --quiet is used). --loop is implied if ``--post`` is
+used. ``--pre`` can be used without a --loop to import additional
+modules (or whatever else you may want to do with a statement).
 
 Using ``-s``/``--split`` or ``-F``/``--field-sep`` for doing awk things
 also implies --loop. The resulting list is named ``f`` in the execution
@@ -321,8 +323,9 @@ replace ``grep``:
 
 .. code:: bash
 
-  $ ls / | rep '(i for i in stdin if re.search("^m", i))'
-  $ ls / | rep 'filter(lambda x: re.search("^m", x), stdin)'
+  $ ls / | rep 'filter(lambda x: re.search("m", x), stdin)'
+  $ ls / | rep -lS 're.search("m", i).string)'
+  $ # using the -S option to suppress a ton of error messages
 
 replace ``sed 's/...``:
 
