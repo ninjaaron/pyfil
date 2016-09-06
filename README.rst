@@ -122,12 +122,11 @@ examples:
 
   $ # None gets skipped
   $ rep None
-  $ # numbers print as numbers
-  $ rep math.pi
-  3.141592653589793
-  $ # strings just print...
+  $ # strings and numbers just print
   $ rep sys.platfrom
   linux
+  $ rep math.pi
+  3.141592653589793
   $ # objects try to print as json
   $ rep sys.path
   ["/home/ninjaaron/src/py/pyfil/venv/bin", "/home/ninjaaron/src/py/pyfil", "/usr/lib/python35.zip", "/usr/lib/python3.5", "/usr/lib/python3.5/plat-linux", "/usr/lib/python3.5/lib-dynload", "/home/ninjaaron/src/py/pyfil/venv/lib/python3.5/site-packages"]
@@ -219,10 +218,10 @@ than throwing and error and interrupting iteration).
 
 json input
 ~~~~~~~~~~
-by popular demand, pyfil can parse json objects from stdin with the
-``-j``/``--json`` flag. They are passed into the environment as the
-``j`` object.  combining with the --loop flag will treat stdin as one json
-object per line.
+``rep`` can parse json objects from stdin with the ``-j``/``--json``
+flag.  They are passed into the environment as the ``j`` object.
+combining with the --loop flag will treat stdin as one json object per
+line.
 
 formatting output (and 'awk stuff')
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
