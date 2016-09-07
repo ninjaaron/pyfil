@@ -151,7 +151,7 @@ def run(expressions, args, namespace={}):
     if not (args.quiet or args.exec):
         if args.join is not None and isinstance(value, collections.Iterable):
             print(ast.literal_eval("'''" + args.join.replace("'", r"\'") +
-                "'''").join(value))
+                "'''").join(map(str, value)))
         elif value is None:
             pass
         elif isinstance(value, collections.Iterator):
@@ -176,7 +176,7 @@ def main():
                     'explicit.')
 
     ap.add_argument('-l', '--loop', action='store_true',
-                    help='for i in stdin: expressions')
+                    help='for n, i in enumerate(stdin): expressions')
 
     ap.add_argument('-x', '--exec', action='store_true',
                     help='use exec instead of eval. statements are allowed, '
@@ -245,8 +245,8 @@ def main():
     if a.loop:
         if a.pre:
             exec(a.pre, namespace)
-        for i in map(str.rstrip, sys.stdin):
-            namespace.update(i=i)
+        for n, i in enumerate(map(str.rstrip, sys.stdin)):
+            namespace.update(i=i, n=n)
             if a.json:
                 namespace.update(j=json.loads(i))
 

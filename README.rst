@@ -71,7 +71,7 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -l, --loop            for i in stdin: expressions
+  -l, --loop            for n, i in enumerate(stdin): expressions
   -x, --exec            use exec instead of eval. statements are allowed, but
                         automatic printing is lost. doesn't affect --post
   -q, --quiet           suppress automatic printing. doesn't affect --post
@@ -100,7 +100,6 @@ optional arguments:
   -H EXCEPTION_HANDLER, --exception-handler EXCEPTION_HANDLER
                         specify exception handler with the format 'Exception:
                         alternative expression to eval'
-
 
 available objects
 ~~~~~~~~~~~~~~~~~
@@ -282,7 +281,7 @@ like this:
 
 .. code:: python
 
-    for i in map(str.rstrip, sys.stdin):
+    for n, i in enumerate(stdin):
         expressions
 
 Therefore, the above loop can also be written thusly:
