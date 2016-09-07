@@ -63,11 +63,11 @@ usage
      expression [expression ...]
 
 positional arguments:
-  expression            expression(s) to be executed. If multiple expression
-                        arguments are given, and --exec is not used, the value
-                        of the previous expression is available as 'x' in the
-                        following expression. if --exec is used, all
-                        assignment must be explicit.
+  ``expression`` expression(s) to be executed. If multiple expression
+  arguments are given, and --exec is not used, the value
+  of the previous expression is available as 'x' in the
+  following expression. if --exec is used, all
+  assignment must be explicit.
 
 optional arguments:
   -h, --help            show this help message and exit
