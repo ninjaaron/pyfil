@@ -400,13 +400,6 @@ do whatever they can't... and seriously, how will coreutils do this?:
       "timestamp": "Sep 6 20:55",
       "size": 18498
     },
-    "out.html": {
-      "group": "users",
-      "user": "ninjaaron",
-      "permissions": "-rw-r--r--",
-      "timestamp": "Sep 6 20:56",
-      "size": 44865
-    },
     "pyfil/": {
       "group": "users",
       "user": "ninjaaron",
