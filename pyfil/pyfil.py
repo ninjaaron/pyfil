@@ -1,18 +1,33 @@
 #!/usr/bin/env python3
 '''
-Evaluate python expressions. Print the return value. If the return value
-is an iterator, print each item on its own line. If the return value is a
-builtin container type, attempt to serialize it as json before printing.
+Evaluate python expressions. Print the return value. Filter stdin.
+If the return value is an iterator, print each item on its own line. If
+the return value is a builtin container type, attempt to serialize it
+as json before printing.
 
 rep automatically imports any modules used in expressions.
 
 If you'd like to create any other objects to use in the execution
 environment ~/.config/pyfil-env.py and put things in it.
 
+default objects:
+
+    l = []
+    d = {}
+
+These are empty containers you might wish to add items to during
+iteration, for example.
+
+x is always the return value of the previous expression.
+
 The execution environment also has a special object for stdin,
 creatively named "stdin". This differs from sys.stdin in that it
 rstrips (aka chomps) all the lines when you iterate over it, and it has
 a property, stdin.l, which returns a list of the (rstripped) lines.
+
+Certain other flags; --loop (or anything that implies --loop), --json,
+--split or --field_sep; may create additional objects. Check the flag
+descriptions for further details.
 
 Home: https://github.com/ninjaaron/pyfil
 '''
@@ -86,13 +101,21 @@ def handle_errors(exception, args):
         print('\x1b[31mError\x1b[0m:', exception, file=sys.stderr)
 
 
+class SafeListEncode(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, SafeList):
+            return obj.data
+        return json.JSONEncoder.default(self, obj)
+
+
 def print_obj(obj, indent=None):
     "print strings, serialize other stuff to json, or don't"
     if isinstance(obj, str):
         print(obj)
     else:
         try:
-            print(json.dumps(obj, ensure_ascii=False, indent=indent))
+            print(json.dumps(obj, ensure_ascii=False,
+                  indent=indent, cls=SafeListEncode))
         except TypeError:
             print(obj)
 
@@ -157,26 +180,31 @@ def main():
 
     ap.add_argument('-x', '--exec', action='store_true',
                     help='use exec instead of eval. statements are allowed, '
-                         'but automatic printing is lost')
+                         'but automatic printing is lost. '
+                         "doesn't affect --post")
 
     ap.add_argument('-q', '--quiet', action='store_true',
-                    help='suppress automatic printing')
+                    help="suppress automatic printing. doesn't affect --post")
 
     ap.add_argument('-j', '--json', action='store_true',
                     help="load stdin as json into object 'j'; If used with "
-                    '--loop, treat each line of stdin as a new object')
+                         '--loop, treat each line of stdin as a new object')
 
-    ap.add_argument('--force-oneline-json', action='store_true',
+    ap.add_argument('-o', '--force-oneline-json', action='store_true',
                     help='outside of loops and iterators, objects serialzed '
                          'to json print with two-space indent. this forces '
                          'this forces all json objects to print on a single '
                          'line.')
 
     ap.add_argument('-b', '--pre',
-                    help='statement to evaluate before expressions')
+                    help='statement to evaluate before expression args. '
+                         "multiple statements may be combined with ';'. "
+                         'no automatic printing')
 
     ap.add_argument('-e', '--post',
-                    help='expression to evaluate after the loop')
+                    help='expression to evaluate after the loop. always '
+                         'handeled by eval, even if --exec, and always prints '
+                         'return value, even if --quiet. implies --loop')
 
     ap.add_argument('-s', '--split', action='store_true',
                     help="split lines from stdin on whitespace into list 'f'. "
@@ -184,7 +212,7 @@ def main():
 
     ap.add_argument('-F', '--field-sep', metavar='PATTERN',
                     help="regex used to split lines from stdin into list 'f'. "
-                          "implies -l")
+                          "implies --loop")
 
     ap.add_argument('-n', '--join', metavar='STRING',
                     help='join items in iterables with STRING')
@@ -198,7 +226,7 @@ def main():
 
     ap.add_argument('-H', '--exception-handler',
                     help='specify exception handler with the format '
-                         '`Exception: alternative expression to eval`')
+                         "'Exception: alternative expression to eval'")
 
     a = ap.parse_args()
 
@@ -207,11 +235,14 @@ def main():
     user_env = os.environ['HOME'] + '/.config/pyfil-env.py'
 
     namespace = NameSpace(__builtins__)
-    namespace.update(stdin=StdIn())
+    namespace.update(stdin=StdIn(), l=[], d={})
     if os.path.exists(user_env):
         exec(open(user_env).read(), namespace)
 
-    if a.loop or a.post or a.split or a.field_sep:
+    if a.post or a.split or a.field_sep:
+        a.loop = True
+
+    if a.loop:
         if a.pre:
             exec(a.pre, namespace)
         for i in map(str.rstrip, sys.stdin):
@@ -226,6 +257,8 @@ def main():
 
             run(expressions, a, namespace)
         if a.post:
+            if a.quiet or a.exec:
+                a.loop, a.quiet, a.exec = None, None, None
             run((a.post,), a, namespace)
 
     else:

@@ -58,12 +58,12 @@ usage
 
 .. code::
 
-  rep [-h] [-l] [-x] [-q] [-j] [--force-oneline-json] [-b PRE] [-e POST]
-      [-s] [-F PATTERN] [-n STRING] [-R] [-S] [-H EXCEPTION_HANDLER]
-      expression [expression ...]
+ rep [-h] [-l] [-x] [-q] [-j] [-o] [-b PRE] [-e POST] [-s] [-F PATTERN]
+     [-n STRING] [-R] [-S] [-H EXCEPTION_HANDLER]
+     expression [expression ...]
 
 positional arguments:
-  ``expression``        expression(s) to be executed. If multiple expression
+  expression            expression(s) to be executed. If multiple expression
                         arguments are given, and --exec is not used, the value
                         of the previous expression is available as 'x' in the
                         following expression. if --exec is used, all
@@ -71,30 +71,36 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -l, --loop            for i in stdin: expression
+  -l, --loop            for i in stdin: expressions
   -x, --exec            use exec instead of eval. statements are allowed, but
-                        automatic printing is lost
-  -q, --quiet           suppress automatic printing
+                        automatic printing is lost. doesn't affect --post
+  -q, --quiet           suppress automatic printing. doesn't affect --post
   -j, --json            load stdin as json into object 'j'; If used with
                         --loop, treat each line of stdin as a new object
-  --force-oneline-json  outside of loops and iterators, objects serialzed to
+  -o, --force-oneline-json
+                        outside of loops and iterators, objects serialzed to
                         json print with two-space indent. this forces this
                         forces all json objects to print on a single line.
-  -b PRE, --pre PRE     statement to evaluate before expressions
-  -e POST, --post POST  expression to evaluate after the loop
+  -b PRE, --pre PRE     statement to evaluate before expression args. multiple
+                        statements may be combined with ';'. no automatic
+                        printing
+  -e POST, --post POST  expression to evaluate after the loop. always handeled
+                        by eval, even if --exec, and always prints return
+                        value, even if --quiet. implies --loop
   -s, --split           split lines from stdin on whitespace into list 'f'.
                         implies --loop
   -F PATTERN, --field-sep PATTERN
                         regex used to split lines from stdin into list 'f'.
-                        implies -l
+                        implies --loop
   -n STRING, --join STRING
                         join items in iterables with STRING
   -R, --raise-errors    raise errors in evaluation and stop execution
                         (default: print message to stderr and continue)
   -S, --silence-errors  suppress error messages
   -H EXCEPTION_HANDLER, --exception-handler EXCEPTION_HANDLER
-                        specify exception handler with the format ``Exception:
-                        alternative expression to eval``
+                        specify exception handler with the format 'Exception:
+                        alternative expression to eval'
+
 
 available objects
 ~~~~~~~~~~~~~~~~~
@@ -102,6 +108,16 @@ available objects
 
 If you'd like to create any other objects to use in the execution
 environment ~/.config/pyfil-env.py and put things in it.
+
+default objects:
+
+    l = []
+    d = {}
+
+These are empty containers you might wish to add items to during
+iteration, for example.
+
+x is always the return value of the previous expression.
 
 The execution environment also has a special object for stdin,
 creatively named ``stdin``. This differs from sys.stdin in that it
@@ -114,6 +130,10 @@ character. If you do want the newlines, access sys.stdin directly.
 
 stdin inherits the rest of its methods from sys.stdin, so you can use
 stdin.read() to get a string of all lines, if that's what you need.
+
+Certain other flags; --loop (or anything that implies --loop), --json,
+--split or --field_sep; may create additional objects. Check the flag
+descriptions for further details.
 
 output
 ~~~~~~
@@ -207,6 +227,9 @@ expressions are evaluated with exec, so statements, such as assignments,
 may be used. Values may still be printed explicitly.
 
 --quite suppresses automatic printing, but eval is still used.
+
+The --post option is immune from --quiet and --exec. It will always be
+evaluated with ``eval()``, and it will always try to print
 
 using multiple expression arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -389,7 +412,10 @@ do whatever they can't... and seriously, how will coreutils do this?:
 
   $ wget -qO- http://pypi.python.org/pypi/pyfil/json/ | rep -j 'j["urls"][0]["filename"]'
   pyfil-0.5-py3-none-any.whl
-  $ ls -l | rep '[i.split() for i in stdin.l[1:]]' "{i[8]: {'permissions': i[0], 'user': i[2], 'group': i[3], 'size': int(i[4]), 'timestamp': ' '.join(i[5:8])} for i in x}" 
+  $ ls -l | rep -qSs \
+  "d.update({f[8]: {'permissions': f[0], 'user': f[2], 'group': f[3],
+                    'size': int(f[4]), 'timestamp': ' '.join(f[5:8])}})" \
+  --post 'd'
 .. code:: json
 
   {
@@ -430,8 +456,6 @@ Other things which might be difficult with coreutils:
   $ ls / | rep -n '  ' 'reversed(stdin.l)'
   var/  usr/  tmp/  sys/  srv/  sbin@  run/  root/  proc/  opt/  ...
   $ # ^^ also, `ls /|rep -n '  ' 'stdin.l[::-1]'
-  $
-  $ 
 
 error handling
 ~~~~~~~~~~~~~~
