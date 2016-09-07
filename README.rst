@@ -161,8 +161,12 @@ examples:
 
 Most JSON is also valid Python, but be aware that you may occasionally
 see ``null`` instead of ``None`` along with ``true`` and ``false``
-instead of ``True`` and ``False``. I guess that's a risk I'm willing to
-take.
+instead of ``True`` and ``False``, and your tuples will look like list.
+I guess that's a risk I'm willing to take. (The rational for this is
+that pyfil, despite what the name of the ``rep`` command may indicate,
+is more about composability in the shell than printing valid Python
+literals. JSON is the defacto standard for serialization, or should be,
+if only people would stop using XML for that...)
 
 suppressing output and using statements
 .......................................
