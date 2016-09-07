@@ -117,7 +117,7 @@ default objects:
 These are empty containers you might wish to add items to during
 iteration, for example.
 
-- x is always the return value of the previous expression.
+- x is always the return value of the previous expression unless --exec.
 
 The execution environment also has a special object for stdin,
 creatively named ``stdin``. This differs from sys.stdin in that it
