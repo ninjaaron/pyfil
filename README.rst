@@ -389,7 +389,46 @@ do whatever they can't... and seriously, how will coreutils do this?:
 
   $ wget -qO- http://pypi.python.org/pypi/pyfil/json/ | rep -j 'j["urls"][0]["filename"]'
   pyfil-0.5-py3-none-any.whl
+  $ ls -l | rep '[i.split() for i in stdin.l[1:]]' "{i[8]: {'permissions': i[0], 'user': i[2], 'group': i[3], 'size': int(i[4]), 'timestamp': ' '.join(i[5:8])} for i in x}" 
+.. code:: json
 
+  {
+    "README.rst": {
+      "group": "users",
+      "user": "ninjaaron",
+      "permissions": "-rw-r--r--",
+      "timestamp": "Sep 6 20:55",
+      "size": 18498
+    },
+    "out.html": {
+      "group": "users",
+      "user": "ninjaaron",
+      "permissions": "-rw-r--r--",
+      "timestamp": "Sep 6 20:56",
+      "size": 44865
+    },
+    "pyfil/": {
+      "group": "users",
+      "user": "ninjaaron",
+      "permissions": "drwxr-xr-x",
+      "timestamp": "Sep 6 20:20",
+      "size": 16
+    },
+    "setup.py": {
+      "group": "users",
+      "user": "ninjaaron",
+      "permissions": "-rw-r--r--",
+      "timestamp": "Sep 6 20:30",
+      "size": 705
+    },
+    "LICENSE": {
+      "group": "users",
+      "user": "ninjaaron",
+      "permissions": "-rw-r--r--",
+      "timestamp": "Sep 3 13:32",
+      "size": 1306
+    }
+  }
 
 Other things which might be difficult with coreutils:
 
