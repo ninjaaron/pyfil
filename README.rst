@@ -56,21 +56,31 @@ on stealing as long as it takes!
 usage
 -----
 
-usage: rep [-h] [-l] [-q] [-j] [-b PRE] [-e POST] [-s] [-F PATTERN]
-           [-n STRING] [-R] [-S] [-H EXCEPTION_HANDLER]
-           expression [expression ...]
+.. code::
+
+  rep [-h] [-l] [-x] [-q] [-j] [--force-oneline-json] [-b PRE] [-e POST]
+      [-s] [-F PATTERN] [-n STRING] [-R] [-S] [-H EXCEPTION_HANDLER]
+      expression [expression ...]
 
 positional arguments:
-  expression            expression(s) to be executed.
+  ``expression``        expression(s) to be executed. If multiple expression
+                        arguments are given, and --exec is not used, the value
+                        of the previous expression is available as 'x' in the
+                        following expression. if --exec is used, all
+                        assignment must be explicit.
 
 optional arguments:
   -h, --help            show this help message and exit
-  -l, --loop            for i in sys.stdin: expression
-  -q, --quiet           suppress automatic printing; If set, both statements
-                        and expressions may be used
+  -l, --loop            for i in stdin: expression
+  -x, --exec            use exec instead of eval. statements are allowed, but
+                        automatic printing is lost
+  -q, --quiet           suppress automatic printing
   -j, --json            load stdin as json into object 'j'; If used with
                         --loop, treat each line of stdin as a new object
-  -b PRE, --pre PRE     expression to evaluate before the loop
+  --force-oneline-json  outside of loops and iterators, objects serialzed to
+                        json print with two-space indent. this forces this
+                        forces all json objects to print on a single line.
+  -b PRE, --pre PRE     statement to evaluate before expressions
   -e POST, --post POST  expression to evaluate after the loop
   -s, --split           split lines from stdin on whitespace into list 'f'.
                         implies --loop
@@ -120,7 +130,10 @@ types of objects use different printing conventions.
 - all of these are overridden by --join
 
 Iterators will also try to serialize each returned object as json if
-they are not strings.
+they are not strings. json objects will be indented if only one is being
+printed. If --loop is set or an number of objects is being serialzed
+from an iterator, it will be one object per-line. --force-oneline-json
+extends this policy to printing single json objects as well.
 
 examples:
 
@@ -135,12 +148,28 @@ examples:
   3.141592653589793
   $ # objects try to print as json
   $ rep sys.path
-  ["/home/ninjaaron/src/py/pyfil/venv/bin", "/home/ninjaaron/src/py/pyfil", "/usr/lib/python35.zip", "/usr/lib/python3.5", "/usr/lib/python3.5/plat-linux", "/usr/lib/python3.5/lib-dynload", "/home/ninjaaron/src/py/pyfil/venv/lib/python3.5/site-packages"]
+  [
+    "/home/ninjaaron/.local/bin",
+    "/usr/lib/python35.zip",
+    "/usr/lib/python3.5",
+    "/usr/lib/python3.5/plat-linux",
+    "/usr/lib/python3.5/lib-dynload",
+    "/home/ninjaaron/.local/lib/python3.5/site-packages",
+    "/usr/lib/python3.5/site-packages"
+  ]
   $ rep '{i: n for n, i in enumerate(sys.path)}'
-  {"/usr/lib/python3.5": 3, "/home/ninjaaron/src/py/pyfil/venv/lib/python3.5/site-packages": 6, "/usr/lib/python3.5/lib-dynload": 5, "/usr/lib/python3.5/plat-linux": 4, "/home/ninjaaron/src/py/pyfil": 1, "/usr/lib/python35.zip": 2, "/home/ninjaaron/src/py/pyfil/venv/bin": 0}
+  {
+    "/usr/lib/python3.5/plat-linux": 3,
+    "/usr/lib/python35.zip": 1,
+    "/usr/lib/python3.5": 2,
+    "/usr/lib/python3.5/lib-dynload": 4,
+    "/usr/lib/python3.5/site-packages": 6,
+    "/home/ninjaaron/.local/lib/python3.5/site-packages": 5,
+    "/home/ninjaaron/.local/bin": 0
+  }
   $ # unless they can't
-  $ rep list
-  <class 'list'>
+  $ rep '[list, print, re]'
+  [<class 'list'>, <built-in function print>, <module 're' from '/usr/lib/python3.5/re.py'>]
   $ # iterators print each item on a new line, applying the same conventions
   $ rep 'iter(sys.path)'
   /home/ninjaaron/src/py/pyfil/venv/bin
@@ -173,17 +202,19 @@ suppressing output and using statements
 Because these defaults use eval() internally to get value of
 expressions, statements may not be used. exec() supports statements, but
 it does not return the value of expressions when they are evaluated.
-When the -q/--quiet flag is used, automatic printing is suppressed, and
+When the -x/--exec flag is used, automatic printing is suppressed, and
 expressions are evaluated with exec, so statements, such as assignments,
 may be used. Values may still be printed explicitly.
+
+--quite suppresses automatic printing, but eval is still used.
 
 using multiple expression arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ``rep`` can take as many expressions as desired as arguments. When used
-with --quiet, this works pretty much as expected, and assignment must be
+with --exec, this works pretty much as expected, and assignment must be
 done manually.
 
-Without --quiet, the return value of each expression is assigned to the
+Without --exec, the return value of each expression is assigned to the
 variable ``x``, which can be used in the next expression. The final
 value of ``x`` is what is ultimately printed, not any intermediate
 values.
@@ -231,7 +262,7 @@ actions to run before or after the loop. Note that the --pre option is
 run with exec instead of eval, and therefore output is never printed,
 and statements may be used. This is for things like initializing
 container types. --post is automatically printed and statements are not
-allowed (unless --quiet is used). --loop is implied if ``--post`` is
+allowed (unless --exec is used). --loop is implied if ``--post`` is
 used. ``--pre`` can be used without a --loop to import additional
 modules (or whatever else you may want to do with a statement).
 

@@ -153,7 +153,7 @@ def main():
                     'explicit.')
 
     ap.add_argument('-l', '--loop', action='store_true',
-                    help='for i in sys.stdin: expression')
+                    help='for i in stdin: expressions')
 
     ap.add_argument('-x', '--exec', action='store_true',
                     help='use exec instead of eval. statements are allowed, '
