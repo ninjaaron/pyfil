@@ -111,13 +111,13 @@ environment ~/.config/pyfil-env.py and put things in it.
 
 default objects:
 
-    l = []
-    d = {}
+- l = []
+- d = {}
 
 These are empty containers you might wish to add items to during
 iteration, for example.
 
-x is always the return value of the previous expression.
+- x is always the return value of the previous expression.
 
 The execution environment also has a special object for stdin,
 creatively named ``stdin``. This differs from sys.stdin in that it
@@ -229,7 +229,9 @@ may be used. Values may still be printed explicitly.
 --quite suppresses automatic printing, but eval is still used.
 
 The --post option is immune from --quiet and --exec. It will always be
-evaluated with ``eval()``, and it will always try to print
+evaluated with ``eval()``, and it will always try to print. The only
+difference is that if --quiet or --exec was used, json will be printed
+with indentation unless --force-oneline-json is used.
 
 using multiple expression arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
