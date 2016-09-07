@@ -233,6 +233,15 @@ evaluated with ``eval()``, and it will always try to print. The only
 difference is that if --quiet or --exec was used, json will be printed
 with indentation unless --force-oneline-json is used.
 
+using files for input and output
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``rep`` doesn't have any parameters for input and output files. Instead,
+use redirection.
+
+.. code:: bash
+
+  rep -s 'i.upper' > output.txt < input.txt
+
 using multiple expression arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ``rep`` can take as many expressions as desired as arguments. When used
