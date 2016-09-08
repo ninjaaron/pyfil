@@ -212,7 +212,7 @@ def main():
 
     ap.add_argument('-F', '--field-sep', metavar='PATTERN',
                     help="regex used to split lines from stdin into list 'f'. "
-                          "implies --loop")
+                         "implies --loop")
 
     ap.add_argument('-n', '--join', metavar='STRING',
                     help='join items in iterables with STRING')
@@ -251,7 +251,11 @@ def main():
                 namespace.update(j=json.loads(i))
 
             if a.field_sep:
-                namespace.update(f=SafeList(re.split(a.field_sep, i)))
+                if len(a.field_sep) == 1:
+                    f = SafeList(i.split(a.field_sep))
+                else:
+                    f = SafeList(re.split(a.field_sep, i))
+                namespace.update(f=f)
             elif a.split:
                 namespace.update(f=SafeList(i.split()))
 
