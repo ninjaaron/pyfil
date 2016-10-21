@@ -37,6 +37,7 @@ import json
 import os
 import re
 import ast
+import argparse
 from functools import update_wrapper
 
 
@@ -163,7 +164,6 @@ def run(expressions, args, namespace={}):
 
 
 def main():
-    import argparse
     ap = argparse.ArgumentParser(
             description=__doc__,
             formatter_class=argparse.RawDescriptionHelpFormatter)
