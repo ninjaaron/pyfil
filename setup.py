@@ -3,7 +3,7 @@ import fastentrypoints
 
 setup(
     name='pyfil',
-    version='1.2',
+    version='1.3',
     author='Aaron Christianson',
     license='BSD',
     author_email='ninjaaron@gmail.com',
@@ -12,6 +12,6 @@ setup(
     long_description=open('README.rst').read(),
     keywords='evaluate',
     py_modules=['pyfil'],
-    entry_points={'console_scripts': ['rep=pyfil:main', 'pyfil=pyfil.main']},
+    entry_points={'console_scripts': ['rep=pyfil:main', 'pyfil=pyfil:main']},
     classifiers=['Programming Language :: Python :: 3'],
 )
