@@ -239,7 +239,7 @@ use redirection.
 
 .. code:: bash
 
-  rep -s 'i.upper' > output.txt < input.txt
+  rep -s 'i.upper()' > output.txt < input.txt
 
 using multiple expression arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -295,9 +295,9 @@ actions to run before or after the loop. Note that the --pre option is
 run with exec instead of eval, and therefore output is never printed,
 and statements may be used. This is for things like initializing
 container types. --post is automatically printed and statements are not
-allowed (unless --exec is used). --loop is implied if ``--post`` is
-used. ``--pre`` can be used without a --loop to import additional
-modules (or whatever else you may want to do with a statement).
+allowed (even if --exec is used). --loop is implied if ``--post`` is
+used. ``--pre`` can be used without a --loop to do assignments (or
+whatever else you may want to do with a statement).
 
 Using ``-s``/``--split`` or ``-F``/``--field-sep`` for doing awk things
 also implies --loop. The resulting list is named ``f`` in the execution
