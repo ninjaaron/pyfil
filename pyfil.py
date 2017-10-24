@@ -41,6 +41,12 @@ import argparse
 from functools import update_wrapper
 
 
+class LazyDict(dict):
+    __getattr__ = dict.__getitem__
+    __setattr__ = dict.__setattr__
+    __delattr__ = dict.__delitem__
+
+
 class reify(object):
     '"stolen" from Pylons'
     def __init__(self, wrapped):
@@ -239,6 +245,9 @@ def main():
     if os.path.exists(user_env):
         exec(open(user_env).read(), namespace)
 
+    if a.json:
+        jdecode = json.JSONDecoder(object_hook=LazyDict).decode
+
     if a.post or a.split or a.field_sep:
         a.loop = True
 
@@ -248,7 +257,7 @@ def main():
         for n, i in enumerate(map(str.rstrip, sys.stdin)):
             namespace.update(i=i, n=n)
             if a.json:
-                namespace.update(j=json.loads(i))
+                namespace.update(j=jdecode(i))
 
             if a.field_sep:
                 if len(a.field_sep) == 1:
@@ -269,7 +278,7 @@ def main():
         if a.pre:
             exec(a.pre, namespace)
         if a.json:
-            namespace.update(j=json.load(sys.stdin))
+            namespace.update(j=jdecode(sys.stdin.read()))
         run(expressions, a, namespace)
 
 
