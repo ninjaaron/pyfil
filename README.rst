@@ -311,7 +311,8 @@ json input
 ``rep`` can parse json objects from stdin with the ``-j``/``--json``
 flag. They are passed into the environment as the ``j`` object.
 combining with the --loop flag will treat stdin as one json object per
-line.
+line. json objects support dot syntax for attribute access, e.g.
+``j.someattr.attr_of_someattr``
 
 formatting output (and 'awk stuff')
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -420,7 +421,7 @@ do whatever they can't... and seriously, how will coreutils do this?:
 
 .. code:: bash
 
-  $ wget -qO- http://pypi.python.org/pypi/pyfil/json/ | rep -j 'j["urls"][0]["filename"]'
+  $ wget -qO- http://pypi.python.org/pypi/pyfil/json/ | rep -j 'j.urls[0].filename'
   pyfil-0.5-py3-none-any.whl
   $ ls -l | rep -qSs \
   "d.update({f[8]: {'permissions': f[0], 'user': f[2], 'group': f[3],
