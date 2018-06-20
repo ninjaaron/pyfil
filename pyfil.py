@@ -158,7 +158,7 @@ def run(expressions, args, namespace={}):
     if not (args.quiet or args.exec):
         if args.join is not None and isinstance(value, collections.Iterable):
             print(ast.literal_eval("'''" + args.join.replace("'", r"\'") +
-                "'''").join(map(str, value)))
+                                   "'''").join(map(str, value)))
         elif value is None:
             pass
         elif isinstance(value, collections.Iterator):
@@ -195,6 +195,10 @@ def main():
     ap.add_argument('-j', '--json', action='store_true',
                     help="load stdin as json into object 'j'; If used with "
                          '--loop, treat each line of stdin as a new object')
+
+    ap.add_argument('-J', '--real-dict-json', action='store_true',
+                    help='like -j, but creates real dictionaries instead of '
+                         'the wrapper that allows dot syntax.')
 
     ap.add_argument('-o', '--force-oneline-json', action='store_true',
                     help='outside of loops and iterators, objects serialzed '
@@ -237,7 +241,9 @@ def main():
     a = ap.parse_args()
 
     func = 'exec' if a.exec else 'eval'
-    expressions = [compile(e, '<string>', func) for e in a.expression]
+    expressions = [compile(
+        e if a.exec else "(%s)" % e,
+        '<string>', func) for e in a.expression]
     user_env = os.environ['HOME'] + '/.config/pyfil-env.py'
 
     namespace = NameSpace(__builtins__)
@@ -247,6 +253,9 @@ def main():
 
     if a.json:
         jdecode = json.JSONDecoder(object_hook=LazyDict).decode
+    elif a.real_dict_json:
+        jdecode = json.loads
+        a.json = True
 
     if a.post or a.split or a.field_sep:
         a.loop = True
@@ -272,7 +281,7 @@ def main():
         if a.post:
             if a.quiet or a.exec:
                 a.loop, a.quiet, a.exec = None, None, None
-            run((a.post,), a, namespace)
+            run(('(%s)' % a.post,), a, namespace)
 
     else:
         if a.pre:

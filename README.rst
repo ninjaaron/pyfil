@@ -63,11 +63,11 @@ usage
      expression [expression ...]
 
 positional arguments:
-  ``expression`` expression(s) to be executed. If multiple expression
-  arguments are given, and --exec is not used, the value
-  of the previous expression is available as 'x' in the
-  following expression. if --exec is used, all
-  assignment must be explicit.
+  expression            expression(s) to be executed. If multiple expression
+                        arguments are given, and --exec is not used, the value
+                        of the previous expression is available as 'x' in the
+                        following expression. if --exec is used, all
+                        assignment must be explicit.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -77,6 +77,8 @@ optional arguments:
   -q, --quiet           suppress automatic printing. doesn't affect --post
   -j, --json            load stdin as json into object 'j'; If used with
                         --loop, treat each line of stdin as a new object
+  -J, --real-dict-json  like -j, but creates real dictionaries instead of the
+                        wrapper that allows dot syntax.
   -o, --force-oneline-json
                         outside of loops and iterators, objects serialzed to
                         json print with two-space indent. this forces this
