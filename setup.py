@@ -3,7 +3,7 @@ import fastentrypoints
 
 setup(
     name='pyfil',
-    version='1.7',
+    version='1.8',
     author='Aaron Christianson',
     license='BSD',
     author_email='ninjaaron@gmail.com',

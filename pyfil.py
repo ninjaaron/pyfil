@@ -70,7 +70,7 @@ class NameSpace(dict):
 class StdIn:
     'class for wrapping sys.stdin'
     def __init__(self):
-        self.lines = map(str.rstrip, sys.stdin)
+        self.lines = (line.rstrip('\n') for line in sys.stdin)
 
     def __iter__(self):
         return self.lines
