@@ -2,30 +2,48 @@ pyfil
 =====
 Python one-liners in the spirit of Perl and AWK.
 
-``pyfil`` gives you the ``rep`` command. This is because when I
-initially posted it in #python IRC channel, user [Tritium] (that ray of
-sunshine) said I had recreated the REP of the python REPL (read evaluate
-print loop). That is more or less the case. ``rep`` reads python
-expressions at the command line, evaluates them and prints them to
-stdout. It might be interesting as a quick calculator or to test
-something, like the Python REPL, but it also has some special flags for
-iterating on stdin, which make it useful as a filter
-for shell one-liners or scripts (like Perl).
+``pyfil`` stands for PYthon FILter. One of the tenants of the `Unix
+design`_ is that every program is a filter. It's especially obvious of
+programs, like ``grep``, ``sed``, ``sort``, ``tr``, etc.
 
-As a more modern touch, if the return value is a container type, python
-will attempt to serialize it as json before printing, so you can pipe
-output into other tools that deal with json, store it to a file for
-later use, or send it over http. This, combined with the abilitiy to
-read json from stdin (with --json) make a good translator between the
-web, which tends to speak json these days, and the posix environment,
-which tends to think about data in terms of lines in a file (frequently
-with multiple fields per line).
+One notable example is ``awk`` -- a Turing-complete interpreted language
+for parsing text. While many AWK scripts are still in use and it's a
+capable language in its own right, it has been superseded for scripting
+in much of its domain by more general languages like Perl and later
+Python and Ruby. However, AWK was designed to be especially useful in
+the shell as a filter, and it is still in very common use for that today
+(in part because it is on every \*nix system, but also because it's
+great at what it does). AWK is able to be any arbitrary text filter that
+doesn't come as a coreutil. ``perl -e`` is also quite good in these
+applications, and Ruby has made a valiant attempt to be useful in these
+circumstances as well.
+
+Python does have a few good one-line uses as well (``python -m
+http.server``), some elements of its design make it less suited than the
+afore-mentioned languages. ``pyfil`` is one of several attempts to
+address this issue. In particular, it takes a lot of queues in the
+design of its CLI from AWK and Perl, and aims fundamentally to be a
+capable text filter, though it will evaluate any arbitrary Python
+expression and print it's output (with modules being imported
+implicitly as required).
+
+As a more modern touch, it also has a special emphasis on
+interoperability with JSON. If the return value of the evaluated
+expression is a container type, python will attempt to serialize it as
+JSON before printing, so you can pipe output into other tools that deal
+with JSON, store it to a file for later use, or send it over http. This,
+combined with the ability to read JSON from stdin (with --json) make
+``pyfil`` a good translator between the web, which tends to speak JSON
+these days, and the POSIX environment, which tends to think about data
+in terms of lines in a file (frequently with multiple fields per line).
 
 pyfil is in pypi (i.e. you can get it easily with pip, if you want)
 
 note:
   pyfil has only been tested with python3, and only has wheels available
   for python3
+
+.. _unix design: https://en.wikipedia.org/wiki/Unix_philosophy
 
 .. contents::
 
@@ -58,9 +76,9 @@ usage
 
 .. code::
 
- rep [-h] [-l] [-x] [-q] [-j] [-o] [-b PRE] [-e POST] [-s] [-F PATTERN]
-     [-n STRING] [-R] [-S] [-H EXCEPTION_HANDLER]
-     expression [expression ...]
+ pyfil [-h] [-l] [-x] [-q] [-j] [-o] [-b PRE] [-e POST] [-s] [-F PATTERN]
+       [-n STRING] [-R] [-S] [-H EXCEPTION_HANDLER]
+       expression [expression ...]
 
 positional arguments:
   expression            expression(s) to be executed. If multiple expression
@@ -105,7 +123,7 @@ optional arguments:
 
 available objects
 ~~~~~~~~~~~~~~~~~
-``rep`` automatically imports any modules used in expressions.
+``pyfil`` automatically imports any modules used in expressions.
 
 If you'd like to create any other objects to use in the execution
 environment ~/.config/pyfil-env.py and put things in it.
@@ -122,19 +140,21 @@ iteration, for example.
 
 The execution environment also has a special object for stdin,
 creatively named ``stdin``. This differs from sys.stdin in that it
-rstrips (aka chomps) all the lines when you iterate over it, and it has
-a property, ``stdin.l``, which returns a list of the (rstripped) lines.
-pyfil is quite bullish about using rstrip because python's print
-function will supply an additional newline, and if you just want the
-value of the text in the line, you almost never want the newline
-character. If you do want the newlines, access sys.stdin directly.
+strips trailing newlines when you iterate over it, and it has
+a property, ``stdin.l``, which returns a list of the lines (without
+newlines). If you do want the newlines, access sys.stdin directly.
 
 stdin inherits the rest of its methods from sys.stdin, so you can use
 stdin.read() to get a string of all lines, if that's what you need.
 
-Certain other flags; --loop (or anything that implies --loop), --json,
---split or --field_sep; may create additional objects. Check the flag
-descriptions for further details.
+Certain other flags may create additional objects in the evaluation
+context.
+
+  --loop (or anything that implies --loop) create ``n`` and ``i``.
+  --json creates ``j``.
+  --split or --field_sep create ``f``
+  
+Check the flag descriptions for further details.
 
 output
 ~~~~~~
@@ -151,24 +171,25 @@ types of objects use different printing conventions.
 - all of these are overridden by --join
 
 Iterators will also try to serialize each returned object as json if
-they are not strings. json objects will be indented if only one is being
-printed. If --loop is set or an number of objects is being serialzed
-from an iterator, it will be one object per-line. --force-oneline-json
-extends this policy to printing single json objects as well.
+they are not strings. json objects will be indented if only one object
+is being printed. If --loop is set or several of objects are being
+serialzed from an iterator, it will be one object per-line.
+--force-oneline-json extends this policy to printing single json objects
+as well.
 
 examples:
 
 .. code:: bash
 
   $ # None gets skipped
-  $ rep None
+  $ pyfil None
   $ # strings and numbers just print
-  $ rep sys.platfrom
+  $ pyfil sys.platfrom
   linux
-  $ rep math.pi
+  $ pyfil math.pi
   3.141592653589793
   $ # objects try to print as json
-  $ rep sys.path
+  $ pyfil sys.path
   [
     "/home/ninjaaron/.local/bin",
     "/usr/lib/python35.zip",
@@ -178,7 +199,7 @@ examples:
     "/home/ninjaaron/.local/lib/python3.5/site-packages",
     "/usr/lib/python3.5/site-packages"
   ]
-  $ rep '{i: n for n, i in enumerate(sys.path)}'
+  $ pyfil '{i: n for n, i in enumerate(sys.path)}'
   {
     "/usr/lib/python3.5/plat-linux": 3,
     "/usr/lib/python35.zip": 1,
@@ -189,10 +210,10 @@ examples:
     "/home/ninjaaron/.local/bin": 0
   }
   $ # unless they can't
-  $ rep '[list, print, re]'
+  $ pyfil '[list, print, re]'
   [<class 'list'>, <built-in function print>, <module 're' from '/usr/lib/python3.5/re.py'>]
   $ # iterators print each item on a new line, applying the same conventions
-  $ rep 'iter(sys.path)'
+  $ pyfil 'iter(sys.path)'
   /home/ninjaaron/src/py/pyfil/venv/bin
   /home/ninjaaron/src/py/pyfil
   /usr/lib/python35.zip
@@ -200,7 +221,7 @@ examples:
   /usr/lib/python3.5/plat-linux
   /usr/lib/python3.5/lib-dynload
   /home/ninjaaron/src/py/pyfil/venv/lib/python3.5/site-package
-  $ rep '(i.split('/')[1:] for i in sys.path)'
+  $ pyfil '(i.split('/')[1:] for i in sys.path)'
   ["home", "ninjaaron", "src", "py", "pyfil", "venv", "bin"]
   ["home", "ninjaaron", "src", "py", "pyfil"]
   ["usr", "lib", "python35.zip"]
@@ -236,16 +257,16 @@ with indentation unless --force-oneline-json is used.
 
 using files for input and output
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-``rep`` doesn't have any parameters for input and output files. Instead,
+``pyfil`` doesn't have any parameters for input and output files. Instead,
 use redirection.
 
 .. code:: bash
 
-  rep -s 'i.upper()' > output.txt < input.txt
+  pyfil -s 'i.upper()' > output.txt < input.txt
 
 using multiple expression arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-``rep`` can take as many expressions as desired as arguments. When used
+``pyfil`` can take as many expressions as desired as arguments. When used
 with --exec, this works pretty much as expected, and assignment must be
 done manually.
 
@@ -256,7 +277,7 @@ values.
 
 .. code:: bash
 
-  $ rep 'reversed("abcd")' '(i.upper() for i in x)'
+  $ pyfil 'reversed("abcd")' '(i.upper() for i in x)'
   D
   C
   B
@@ -270,7 +291,7 @@ line unless the ``--join`` option is specified.)
 
 .. code:: bash
 
-    $ ls / | rep '(i.upper() for i in stdin)'
+    $ ls / | pyfil '(i.upper() for i in stdin)'
     BIN@
     BOOT/
     DEV/
@@ -278,7 +299,7 @@ line unless the ``--join`` option is specified.)
     HOME/
     ...
 
-However, the ``-l``/``--loop`` flag rep loops over stdin in a context
+However, the ``-l``/``--loop`` flag pyfil loops over stdin in a context
 like this:
 
 .. code:: python
@@ -290,7 +311,7 @@ Therefore, the above loop can also be written thusly:
 
 .. code:: bash
 
-    $ ls / | rep -l 'i.upper()'
+    $ ls / | pyfil -l 'i.upper()'
 
 ``--pre`` and ``--post`` (-b and -e) options can be used to specify
 actions to run before or after the loop. Note that the --pre option is
@@ -310,7 +331,7 @@ than throwing and error and interrupting iteration).
 
 json input
 ~~~~~~~~~~
-``rep`` can parse json objects from stdin with the ``-j``/``--json``
+``pyfil`` can parse json objects from stdin with the ``-j``/``--json``
 flag. They are passed into the environment as the ``j`` object.
 combining with the --loop flag will treat stdin as one json object per
 line. json objects support dot syntax for attribute access, e.g.
@@ -323,7 +344,7 @@ with Python's str.format method and the ``-F`` or ``-s`` options.
 
 .. code:: bash
 
-  $ ls -l /|rep -s '"{0}\t{2}\t{8}".format(*f)'
+  $ ls -l /|pyfil -s '"{0}\t{2}\t{8}".format(*f)'
   Error: tuple index out of range
   lrwxrwxrwx	root	bin
   drwxr-xr-x	root	boot/
@@ -346,7 +367,7 @@ fields with an empty string.
 
 .. code:: bash
 
-  $ ls -l /|rep -sn '\t' 'f[0], f[2], f[8]'
+  $ ls -l /|pyfil -sn '\t' 'f[0], f[2], f[8]'
   total		
   lrwxrwxrwx	root	bin
   drwxr-xr-x	root	boot/
@@ -373,36 +394,36 @@ examples
 ~~~~~~~~
 
 *I realize that it's much better to do most of these things with the
-original utility. This is just to give some ideas of how to use `rep`*
+original utility. This is just to give some ideas of how to use `pyfil`*
 
 replace ``wc -l``:
 
 .. code:: bash
 
-  $ ls / | rep 'len(stdin.l)'
+  $ ls / | pyfil 'len(stdin.l)'
   20
 
 replace ``fgrep``:
 
 .. code:: bash
 
-  $ ls / | rep '(i for i in stdin if "v" in i)'
-  $ ls / | rep -l 'i if "v" in i else None'
+  $ ls / | pyfil '(i for i in stdin if "v" in i)'
+  $ ls / | pyfil -l 'i if "v" in i else None'
 
 
 replace ``grep``:
 
 .. code:: bash
 
-  $ ls / | rep 'filter(lambda x: re.search("^m", x), stdin)'
-  $ ls / | rep -lS 're.search("^m", i).string)'
+  $ ls / | pyfil 'filter(lambda x: re.search("^m", x), stdin)'
+  $ ls / | pyfil -lS 're.search("^m", i).string)'
   $ # using the -S option to suppress a ton of error messages
 
 replace ``sed 's/...``:
 
 .. code:: bash
 
-  $ ls / | rep -l 're.sub("^([^aeiou][aeiou][^aeiou]\W)", lambda m: m.group(0).upper(), i)'
+  $ ls / | pyfil -l 're.sub("^([^aeiou][aeiou][^aeiou]\W)", lambda m: m.group(0).upper(), i)'
   BIN@
   boot/
   data/
@@ -414,18 +435,18 @@ This example illustrates that, while you might normally prefer ``sed``
 for replacement tasks, the ability to define a replacement function with
 ``re.sub`` does offer some interesting possibilities. Indeed, someone
 familiar with coreutils should never prefer to do something they already
-comfortable doing the traditional way with ``rep`` (coreutils are
+comfortable doing the traditional way with ``pyfil`` (coreutils are
 heavily optimized). Python is interesting for this use-case because it
 offers great logic, anonymous functions and all kinds of other goodies
 that only full-fledged, modern programming language can offer. Use
-coreutiles for the jobs they were designed to excel in. Use ``rep`` to
+coreutiles for the jobs they were designed to excel in. Use ``pyfil`` to
 do whatever they can't... and seriously, how will coreutils do this?:
 
 .. code:: bash
 
-  $ wget -qO- http://pypi.python.org/pypi/pyfil/json/ | rep -j 'j.urls[0].filename'
+  $ wget -qO- http://pypi.python.org/pypi/pyfil/json/ | pyfil -j 'j.urls[0].filename'
   pyfil-0.5-py3-none-any.whl
-  $ ls -l | rep -qSs \
+  $ ls -l | pyfil -qSs \
   "d.update({f[8]: {'permissions': f[0], 'user': f[2], 'group': f[3],
                     'size': int(f[4]), 'timestamp': ' '.join(f[5:8])}})" \
   --post 'd'
@@ -466,9 +487,9 @@ Other things which might be difficult with coreutils:
 
 .. code:: bash
 
-  $ ls / | rep -n '  ' 'reversed(stdin.l)'
+  $ ls / | pyfil -n '  ' 'reversed(stdin.l)'
   var/  usr/  tmp/  sys/  srv/  sbin@  run/  root/  proc/  opt/  ...
-  $ # ^^ also, `ls /|rep -n '  ' 'stdin.l[::-1]'
+  $ # ^^ also, `ls /|pyfil -n '  ' 'stdin.l[::-1]'
 
 error handling
 ~~~~~~~~~~~~~~
@@ -481,7 +502,7 @@ don't hear about it.
 
 .. code:: bash
 
-  $ ls -l /|rep -sS '"{0}\t{2}\t{8}".format(*f)' 
+  $ ls -l /|pyfil -sS '"{0}\t{2}\t{8}".format(*f)' 
   lrwxrwxrwx	root	bin
   drwxr-xr-x	root	boot/
   drwxr-xr-x	root	dev/
@@ -496,10 +517,10 @@ done with the ``-R``/``--raise-errors`` flag.
 
 .. code:: bash
 
-  $ ls -l /|rep -sR '"{0}\t{2}\t{8}".format(*f)'
+  $ ls -l /|pyfil -sR '"{0}\t{2}\t{8}".format(*f)'
   Traceback (most recent call last):
-    File "/home/ninjaaron/src/py/pyfil/venv/bin/rep", line 9, in <module>
-      load_entry_point('pyfil', 'console_scripts', 'rep')()
+    File "/home/ninjaaron/src/py/pyfil/venv/bin/pyfil", line 9, in <module>
+      load_entry_point('pyfil', 'console_scripts', 'pyfil')()
     File "/home/ninjaaron/src/py/pyfil/pyfil/pyfil.py", line 242, in main
       run(expressions, a, namespace)
     File "/home/ninjaaron/src/py/pyfil/pyfil/pyfil.py", line 164, in run
@@ -520,7 +541,7 @@ errors), and ``expression`` is the alternative expression to evaluate
 
 .. code:: bash
 
-  $ ls -l /|rep -sH 'IndexError: i' '"{0}\t{2}\t{8}".format(*f)'
+  $ ls -l /|pyfil -sH 'IndexError: i' '"{0}\t{2}\t{8}".format(*f)'
   total 32
   lrwxrwxrwx	root	bin
   drwxr-xr-x	root	boot/
@@ -541,6 +562,6 @@ exception handler because ``f`` is a special list that will return an
 empty string instead of throw an index error if the index is out of
 range:
 
-``ls -l / | rep -s '"{0}\t{2}\t{8}".format(*f) if f[2] else i'``
+``ls -l / | pyfil -s '"{0}\t{2}\t{8}".format(*f) if f[2] else i'``
 
 Easy-peasy.
