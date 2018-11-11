@@ -64,7 +64,10 @@ class reify(object):
 class NameSpace(dict):
     'namespace that imports modules lazily.'
     def __missing__(self, name):
-        return __import__(name)
+        try:
+            return __import__(name)
+        except ImportError:
+            raise NameError('name `{}` is undeclaired'.format(name))
 
 
 class StdIn:
@@ -105,7 +108,11 @@ def handle_errors(exception, args):
     elif args.silence_errors:
         pass
     else:
-        print('\x1b[31mError\x1b[0m:', exception, file=sys.stderr)
+        print(
+            '\x1b[31m{}\x1b[0m:'.format(exception.__class__.__name__),
+            exception,
+            file=sys.stderr
+        )
 
 
 class SafeListEncode(json.JSONEncoder):
