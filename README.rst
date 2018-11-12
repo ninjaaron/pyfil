@@ -7,7 +7,7 @@ design`_ is that every program is a filter. It's especially obvious of
 programs, like ``grep``, ``sed``, ``sort``, ``tr``, etc.
 
 One notable example is ``awk`` -- a Turing-complete, interpreted
-language for parsing text. While AWK scripts are still in use it's a
+language for parsing text. While AWK scripts are still in use and it's a
 fine language, it has been superseded for parsing scripts by more
 general languages like Perl and later Python and Ruby. However, AWK was
 designed to be especially useful in the shell as a filter, and it is
