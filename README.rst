@@ -6,26 +6,25 @@ Python one-liners in the spirit of Perl and AWK.
 design`_ is that every program is a filter. It's especially obvious of
 programs, like ``grep``, ``sed``, ``sort``, ``tr``, etc.
 
-One notable example is ``awk`` -- a Turing-complete interpreted language
-for parsing text. While many AWK scripts are still in use and it's a
-capable language in its own right, it has been superseded for scripting
-in much of its domain by more general languages like Perl and later
-Python and Ruby. However, AWK was designed to be especially useful in
-the shell as a filter, and it is still in very common use for that today
-(in part because it is on every \*nix system, but also because it's
-great at what it does). AWK is able to be any arbitrary text filter that
-doesn't come as a coreutil. ``perl -e`` is also quite good in these
-applications, and Ruby has made a valiant attempt to be useful in these
-circumstances as well.
+One notable example is ``awk`` -- a Turing-complete, interpreted
+language for parsing text. While AWK scripts are still in use it's a
+fine language, it has been superseded for parsing script by more
+general languages like Perl and later Python and Ruby. However, AWK was
+designed to be especially useful in the shell as a filter, and it is
+still in very commonly used for that today (in part because it is on
+every \*nix system, but also because it's great at what it does). AWK is
+able to be any arbitrary text filter that doesn't come as a coreutil.
+``perl -e`` is also quite good as a filter, and Ruby has made a valiant
+attempt to do so as well.
 
-Python does have a few good one-line uses as well (``python -m
+While python does have a few good one-line uses (``python -m
 http.server``), some elements of its design make it less suited than the
 afore-mentioned languages. ``pyfil`` is one of several attempts to
 address this issue. In particular, it takes a lot of queues in the
 design of its CLI from AWK and Perl, and aims fundamentally to be a
 capable text filter, though it will evaluate any arbitrary Python
-expression and print it's output (with modules being imported
-implicitly as required).
+expression and print its value (with modules being imported implicitly
+as required).
 
 As a more modern touch, it also has a special emphasis on
 interoperability with JSON. If the return value of the evaluated
@@ -136,7 +135,7 @@ default objects:
 These are empty containers you might wish to add items to during
 iteration, for example.
 
-- x is always the return value of the previous expression unless --exec.
+- x is the value of the previous expression unless --exec was used.
 
 The execution environment also has a special object for stdin,
 creatively named ``stdin``. This differs from sys.stdin in that it
@@ -277,7 +276,7 @@ values.
 
 .. code:: bash
 
-  $ pyfil 'reversed("abcd")' '(i.upper() for i in x)'
+  $ pyfil 'reversed("abcd")' 'i.upper() for i in x'
   D
   C
   B
@@ -291,7 +290,7 @@ line unless the ``--join`` option is specified.)
 
 .. code:: bash
 
-    $ ls / | pyfil '(i.upper() for i in stdin)'
+    $ ls / | pyfil 'i.upper() for i in stdin'
     BIN@
     BOOT/
     DEV/
@@ -299,8 +298,8 @@ line unless the ``--join`` option is specified.)
     HOME/
     ...
 
-However, the ``-l``/``--loop`` flag pyfil loops over stdin in a context
-like this:
+However, with the ``-l``/``--loop`` flag, pyfil loops over stdin in a
+context like this:
 
 .. code:: python
 
@@ -327,7 +326,7 @@ also implies --loop. The resulting list is named ``f`` in the execution
 environment, in quazi-Perl fashion. (oh, and that list is actually a
 subclass of collections.UserList that returns an empty string if the
 index doesn't exist, so it acts more like awk with empty fields, rather
-than throwing and error and interrupting iteration).
+than throwing and error).
 
 json input
 ~~~~~~~~~~
@@ -337,6 +336,11 @@ combining with the --loop flag will treat stdin as one json object per
 line. json objects support dot syntax for attribute access, e.g.
 ``j.someattr.attr_of_someattr``
 
+There are occasionally functions that require "real" dictionaries and
+won't work with this special subclass that supports dot access. In
+such cases, use ``-J``/``--real-dict-json`` to get unadultered Python
+dictionaries.
+
 formatting output (and 'awk stuff')
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 It's probably obvious that the most powerful way to format strings is
@@ -345,7 +349,7 @@ with Python's str.format method and the ``-F`` or ``-s`` options.
 .. code:: bash
 
   $ ls -l /|pyfil -s '"{0}\t{2}\t{8}".format(*f)'
-  Error: tuple index out of range
+  IndexError: tuple index out of range
   lrwxrwxrwx	root	bin
   drwxr-xr-x	root	boot/
   drwxr-xr-x	root	dev/
@@ -554,7 +558,7 @@ errors), and ``expression`` is the alternative expression to evaluate
 In this case, we've chosen to print line without any additional
 formatting. If other errors are encountered, it will fall back to other
 handlers (``-S``, ``-R``, or the default). For more sophisticated error
-handling... Write a real Python script, where you can handle to your
+handling... write a real Python script, where you can handle to your
 heart's content.
 
 Also note that this case is possible to handle with a test instead of an
