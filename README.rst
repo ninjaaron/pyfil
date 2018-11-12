@@ -149,9 +149,9 @@ stdin.read() to get a string of all lines, if that's what you need.
 Certain other flags may create additional objects in the evaluation
 context.
 
-  --loop (or anything that implies --loop) create ``n`` and ``i``.
-  --json creates ``j``.
-  --split or --field_sep create ``f``
+- --loop (or anything that implies --loop) create ``n`` and ``i``.
+- --json creates ``j``.
+- --split or --field_sep create ``f``
   
 Check the flag descriptions for further details.
 
