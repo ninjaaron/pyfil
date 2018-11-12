@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 '''
-Evaluate python expressions. Print the return value. Filter stdin.
-If the return value is an iterator, print each item on its own line. If
-the return value is a builtin container type, attempt to serialize it
-as json before printing.
+Use python as a filter on stdin. If the expression iterator, print
+each item on its own line. If the value is a builtin container type,
+attempt to serialize it as json before printing.
 
-rep automatically imports any modules used in expressions.
+pyfil automatically imports any modules used in expressions.
 
 If you'd like to create any other objects to use in the execution
 environment ~/.config/pyfil-env.py and put things in it.
@@ -22,8 +21,9 @@ x is always the return value of the previous expression unless --exec.
 
 The execution environment also has a special object for stdin,
 creatively named "stdin". This differs from sys.stdin in that it
-rstrips (aka chomps) all the lines when you iterate over it, and it has
-a property, stdin.l, which returns a list of the (rstripped) lines.
+removes trailing newlines when you iterate over it, and it has
+a property, stdin.l, which returns a list of the lines, rather than an
+iterator.
 
 Certain other flags; --loop (or anything that implies --loop), --json,
 --split or --field_sep; may create additional objects. Check the flag
