@@ -67,7 +67,7 @@ class NameSpace(dict):
         try:
             return __import__(name)
         except ImportError:
-            raise NameError('name `{}` is undeclaired'.format(name))
+            raise NameError("name '{}' is not defined".format(name))
 
 
 class StdIn:
