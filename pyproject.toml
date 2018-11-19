@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "pyfil"
+version = "1.9.1"
+description = "Python one-liners in the shell in the spirit of Perl and AWK"
+authors = ["Aaron Christianson <ninjaaron@gmail.com>"]
+license = "BSD-2-Clause"
+readme = "README.rst"
+homepage = "https://github.com/ninjaaron/pyfil"
+repository = "https://github.com/ninjaaron/pyfil"
+
+[tool.poetry.dependencies]
+python = "^3.5"
+
+[tool.poetry.scripts]
+rep = "pyfil.pyfil:main"
+pyfil = "pyfil.pyfil:main"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.0"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
