@@ -9,7 +9,7 @@ homepage = "https://github.com/ninjaaron/pyfil"
 repository = "https://github.com/ninjaaron/pyfil"
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.4"
 
 [tool.poetry.scripts]
 rep = "pyfil.pyfil:main"
