@@ -1,19 +1,20 @@
 [tool.poetry]
 name = "pyfil"
-version = "1.9.1"
+version = "1.9.2"
 description = "Python one-liners in the shell in the spirit of Perl and AWK"
 authors = ["Aaron Christianson <ninjaaron@gmail.com>"]
 license = "BSD-2-Clause"
 readme = "README.rst"
 homepage = "https://github.com/ninjaaron/pyfil"
 repository = "https://github.com/ninjaaron/pyfil"
+packages = [ { include = "pyfil.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.4"
 
 [tool.poetry.scripts]
-rep = "pyfil.pyfil:main"
-pyfil = "pyfil.pyfil:main"
+rep = "pyfil:main"
+pyfil = "pyfil:main"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"

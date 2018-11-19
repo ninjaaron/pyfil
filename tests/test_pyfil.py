@@ -1,5 +1,2 @@
-from pyfil import __version__
-
-
 def test_version():
-    assert __version__ == '1.9.1'
+    assert "hello, world."
