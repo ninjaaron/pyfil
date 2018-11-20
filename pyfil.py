@@ -48,7 +48,7 @@ class LazyDict(dict):
 
 
 class reify:
-    '"stolen" from Pylons'
+    """"stolen" from Pylons"""
 
     def __init__(self, wrapped):
         self.wrapped = wrapped
@@ -63,7 +63,7 @@ class reify:
 
 
 class NameSpace(dict):
-    "namespace that imports modules lazily."
+    """namespace that imports modules lazily."""
 
     def __missing__(self, name):
         try:
@@ -73,7 +73,7 @@ class NameSpace(dict):
 
 
 class StdIn:
-    "class for wrapping sys.stdin"
+    """class for wrapping sys.stdin"""
 
     def __init__(self):
         self.lines = (line.rstrip("\n") for line in sys.stdin)
@@ -106,7 +106,7 @@ class SafeList(collections.UserList):
 
 
 def handle_errors(exception, args):
-    "stupid simple error handling"
+    """stupid simple error handling"""
     if args.raise_errors:
         raise exception
     elif args.silence_errors:
@@ -127,7 +127,7 @@ class SafeListEncode(json.JSONEncoder):
 
 
 def print_obj(obj, indent=None):
-    "print strings, serialize other stuff to json, or don't"
+    """print strings, serialize other stuff to json, or don't"""
     if isinstance(obj, str):
         print(obj)
     else:
@@ -184,12 +184,13 @@ def run(expressions, args, namespace={}):
             print_obj(value, indent)
 
 
-def main():
-    ap = argparse.ArgumentParser(
+def get_args(arguments=None):
+    parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
+    add = parser.add_argument
 
-    ap.add_argument(
+    add(
         "expression",
         nargs="+",
         help="expression(s) to be "
@@ -200,14 +201,14 @@ def main():
         "explicit.",
     )
 
-    ap.add_argument(
+    add(
         "-l",
         "--loop",
         action="store_true",
         help="for n, i in enumerate(stdin): expressions",
     )
 
-    ap.add_argument(
+    add(
         "-x",
         "--exec",
         action="store_true",
@@ -215,14 +216,14 @@ def main():
         "but automatic printing is lost. doesn't affect --post",
     )
 
-    ap.add_argument(
+    add(
         "-q",
         "--quiet",
         action="store_true",
         help="suppress automatic printing. doesn't affect --post",
     )
 
-    ap.add_argument(
+    add(
         "-j",
         "--json",
         action="store_true",
@@ -230,7 +231,7 @@ def main():
         "--loop, treat each line of stdin as a new object",
     )
 
-    ap.add_argument(
+    add(
         "-J",
         "--real-dict-json",
         action="store_true",
@@ -238,7 +239,7 @@ def main():
         "the wrapper that allows dot syntax.",
     )
 
-    ap.add_argument(
+    add(
         "-o",
         "--force-oneline-json",
         action="store_true",
@@ -248,7 +249,7 @@ def main():
         "line.",
     )
 
-    ap.add_argument(
+    add(
         "-b",
         "--pre",
         help="statement to evaluate before expression args. "
@@ -256,7 +257,7 @@ def main():
         "no automatic printing",
     )
 
-    ap.add_argument(
+    add(
         "-e",
         "--post",
         help="expression to evaluate after the loop. always "
@@ -264,25 +265,23 @@ def main():
         "return value, even if --quiet. implies --loop",
     )
 
-    ap.add_argument(
+    add(
         "-s",
         "--split",
         action="store_true",
         help="split lines from stdin on whitespace into list 'f'. implies --loop",
     )
 
-    ap.add_argument(
+    add(
         "-F",
         "--field-sep",
         metavar="PATTERN",
         help="regex used to split lines from stdin into list 'f'. implies --loop",
     )
 
-    ap.add_argument(
-        "-n", "--join", metavar="STRING", help="join items in iterables with STRING"
-    )
+    add("-n", "--join", metavar="STRING", help="join items in iterables with STRING")
 
-    ap.add_argument(
+    add(
         "-R",
         "--raise-errors",
         action="store_true",
@@ -290,19 +289,20 @@ def main():
         "(default: print message to stderr and continue)",
     )
 
-    ap.add_argument(
-        "-S", "--silence-errors", action="store_true", help="suppress error messages"
-    )
+    add("-S", "--silence-errors", action="store_true", help="suppress error messages")
 
-    ap.add_argument(
+    add(
         "-H",
         "--exception-handler",
         help="specify exception handler with the format "
         "'Exception: alternative expression to eval'",
     )
 
-    a = ap.parse_args()
+    return parser.parse_args(arguments)
 
+
+def main():
+    a = get_args()
     func = "exec" if a.exec else "eval"
     expressions = [
         compile(e if a.exec else "(%s)" % e, "<string>", func) for e in a.expression
