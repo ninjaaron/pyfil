@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''
+"""
 Use python as a filter on stdin. If the expression iterator, print
 each item on its own line. If the value is a builtin container type,
 attempt to serialize it as json before printing.
@@ -30,7 +30,7 @@ Certain other flags; --loop (or anything that implies --loop), --json,
 descriptions for further details.
 
 Home: https://github.com/ninjaaron/pyfil
-'''
+"""
 import collections
 import sys
 import json
@@ -47,8 +47,9 @@ class LazyDict(dict):
     __delattr__ = dict.__delitem__
 
 
-class reify(object):
+class reify:
     '"stolen" from Pylons'
+
     def __init__(self, wrapped):
         self.wrapped = wrapped
         update_wrapper(self, wrapped)
@@ -62,7 +63,8 @@ class reify(object):
 
 
 class NameSpace(dict):
-    'namespace that imports modules lazily.'
+    "namespace that imports modules lazily."
+
     def __missing__(self, name):
         try:
             return __import__(name)
@@ -71,9 +73,10 @@ class NameSpace(dict):
 
 
 class StdIn:
-    'class for wrapping sys.stdin'
+    "class for wrapping sys.stdin"
+
     def __init__(self):
-        self.lines = (line.rstrip('\n') for line in sys.stdin)
+        self.lines = (line.rstrip("\n") for line in sys.stdin)
 
     def __iter__(self):
         return self.lines
@@ -90,28 +93,29 @@ class StdIn:
 
 
 class SafeList(collections.UserList):
-    'class for getting fields from stdin without raising errors'
+    "class for getting fields from stdin without raising errors"
+
     def __getitem__(self, index):
         try:
             return self.data[index]
         except IndexError:
-            return ''
+            return ""
 
     def __iter__(self):
         return iter(self.data)
 
 
 def handle_errors(exception, args):
-    'stupid simple error handling'
+    "stupid simple error handling"
     if args.raise_errors:
         raise exception
     elif args.silence_errors:
         pass
     else:
         print(
-            '\x1b[31m{}\x1b[0m:'.format(exception.__class__.__name__),
+            "\x1b[31m{}\x1b[0m:".format(exception.__class__.__name__),
             exception,
-            file=sys.stderr
+            file=sys.stderr,
         )
 
 
@@ -128,8 +132,9 @@ def print_obj(obj, indent=None):
         print(obj)
     else:
         try:
-            print(json.dumps(obj, ensure_ascii=False,
-                  indent=indent, cls=SafeListEncode))
+            print(
+                json.dumps(obj, ensure_ascii=False, indent=indent, cls=SafeListEncode)
+            )
         except TypeError:
             print(obj)
 
@@ -139,8 +144,8 @@ def run(expressions, args, namespace={}):
     for expr in expressions:
         if args.exception_handler:
             exception, handler = tuple(
-                    i.strip() for i in
-                    args.exception_handler.split(':', maxsplit=1))
+                i.strip() for i in args.exception_handler.split(":", maxsplit=1)
+            )
             try:
                 value = func(expr, namespace)
             except __builtins__[exception]:
@@ -164,8 +169,11 @@ def run(expressions, args, namespace={}):
 
     if not (args.quiet or args.exec):
         if args.join is not None and isinstance(value, collections.Iterable):
-            print(ast.literal_eval("'''" + args.join.replace("'", r"\'") +
-                                   "'''").join(map(str, value)))
+            print(
+                ast.literal_eval("'''" + args.join.replace("'", r"\'") + "'''").join(
+                    map(str, value)
+                )
+            )
         elif value is None:
             pass
         elif isinstance(value, collections.Iterator):
@@ -178,80 +186,128 @@ def run(expressions, args, namespace={}):
 
 def main():
     ap = argparse.ArgumentParser(
-            description=__doc__,
-            formatter_class=argparse.RawDescriptionHelpFormatter)
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
-    ap.add_argument('expression', nargs='+', help='expression(s) to be '
-                    'executed. If multiple expression arguments are given, '
-                    'and --exec is not used, the value of the previous '
-                    "expression is available as 'x' in the following "
-                    'expression. if --exec is used, all assignment must be '
-                    'explicit.')
+    ap.add_argument(
+        "expression",
+        nargs="+",
+        help="expression(s) to be "
+        "executed. If multiple expression arguments are given, "
+        "and --exec is not used, the value of the previous "
+        "expression is available as 'x' in the following "
+        "expression. if --exec is used, all assignment must be "
+        "explicit.",
+    )
 
-    ap.add_argument('-l', '--loop', action='store_true',
-                    help='for n, i in enumerate(stdin): expressions')
+    ap.add_argument(
+        "-l",
+        "--loop",
+        action="store_true",
+        help="for n, i in enumerate(stdin): expressions",
+    )
 
-    ap.add_argument('-x', '--exec', action='store_true',
-                    help='use exec instead of eval. statements are allowed, '
-                         'but automatic printing is lost. '
-                         "doesn't affect --post")
+    ap.add_argument(
+        "-x",
+        "--exec",
+        action="store_true",
+        help="use exec instead of eval. statements are allowed, "
+        "but automatic printing is lost. doesn't affect --post",
+    )
 
-    ap.add_argument('-q', '--quiet', action='store_true',
-                    help="suppress automatic printing. doesn't affect --post")
+    ap.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="suppress automatic printing. doesn't affect --post",
+    )
 
-    ap.add_argument('-j', '--json', action='store_true',
-                    help="load stdin as json into object 'j'; If used with "
-                         '--loop, treat each line of stdin as a new object')
+    ap.add_argument(
+        "-j",
+        "--json",
+        action="store_true",
+        help="load stdin as json into object 'j'; If used with "
+        "--loop, treat each line of stdin as a new object",
+    )
 
-    ap.add_argument('-J', '--real-dict-json', action='store_true',
-                    help='like -j, but creates real dictionaries instead of '
-                         'the wrapper that allows dot syntax.')
+    ap.add_argument(
+        "-J",
+        "--real-dict-json",
+        action="store_true",
+        help="like -j, but creates real dictionaries instead of "
+        "the wrapper that allows dot syntax.",
+    )
 
-    ap.add_argument('-o', '--force-oneline-json', action='store_true',
-                    help='outside of loops and iterators, objects serialzed '
-                         'to json print with two-space indent. this forces '
-                         'this forces all json objects to print on a single '
-                         'line.')
+    ap.add_argument(
+        "-o",
+        "--force-oneline-json",
+        action="store_true",
+        help="outside of loops and iterators, objects serialzed "
+        "to json print with two-space indent. this forces "
+        "this forces all json objects to print on a single "
+        "line.",
+    )
 
-    ap.add_argument('-b', '--pre',
-                    help='statement to evaluate before expression args. '
-                         "multiple statements may be combined with ';'. "
-                         'no automatic printing')
+    ap.add_argument(
+        "-b",
+        "--pre",
+        help="statement to evaluate before expression args. "
+        "multiple statements may be combined with ';'. "
+        "no automatic printing",
+    )
 
-    ap.add_argument('-e', '--post',
-                    help='expression to evaluate after the loop. always '
-                         'handeled by eval, even if --exec, and always prints '
-                         'return value, even if --quiet. implies --loop')
+    ap.add_argument(
+        "-e",
+        "--post",
+        help="expression to evaluate after the loop. always "
+        "handeled by eval, even if --exec, and always prints "
+        "return value, even if --quiet. implies --loop",
+    )
 
-    ap.add_argument('-s', '--split', action='store_true',
-                    help="split lines from stdin on whitespace into list 'f'. "
-                         'implies --loop')
+    ap.add_argument(
+        "-s",
+        "--split",
+        action="store_true",
+        help="split lines from stdin on whitespace into list 'f'. implies --loop",
+    )
 
-    ap.add_argument('-F', '--field-sep', metavar='PATTERN',
-                    help="regex used to split lines from stdin into list 'f'. "
-                         "implies --loop")
+    ap.add_argument(
+        "-F",
+        "--field-sep",
+        metavar="PATTERN",
+        help="regex used to split lines from stdin into list 'f'. implies --loop",
+    )
 
-    ap.add_argument('-n', '--join', metavar='STRING',
-                    help='join items in iterables with STRING')
+    ap.add_argument(
+        "-n", "--join", metavar="STRING", help="join items in iterables with STRING"
+    )
 
-    ap.add_argument('-R', '--raise-errors', action='store_true',
-                    help='raise errors in evaluation and stop execution '
-                         '(default: print message to stderr and continue)')
+    ap.add_argument(
+        "-R",
+        "--raise-errors",
+        action="store_true",
+        help="raise errors in evaluation and stop execution "
+        "(default: print message to stderr and continue)",
+    )
 
-    ap.add_argument('-S', '--silence-errors', action='store_true',
-                    help='suppress error messages')
+    ap.add_argument(
+        "-S", "--silence-errors", action="store_true", help="suppress error messages"
+    )
 
-    ap.add_argument('-H', '--exception-handler',
-                    help='specify exception handler with the format '
-                         "'Exception: alternative expression to eval'")
+    ap.add_argument(
+        "-H",
+        "--exception-handler",
+        help="specify exception handler with the format "
+        "'Exception: alternative expression to eval'",
+    )
 
     a = ap.parse_args()
 
-    func = 'exec' if a.exec else 'eval'
-    expressions = [compile(
-        e if a.exec else "(%s)" % e,
-        '<string>', func) for e in a.expression]
-    user_env = os.environ['HOME'] + '/.config/pyfil-env.py'
+    func = "exec" if a.exec else "eval"
+    expressions = [
+        compile(e if a.exec else "(%s)" % e, "<string>", func) for e in a.expression
+    ]
+    user_env = os.environ["HOME"] + "/.config/pyfil-env.py"
 
     namespace = NameSpace(__builtins__)
     namespace.update(stdin=StdIn(), l=[], d={})
@@ -288,7 +344,7 @@ def main():
         if a.post:
             if a.quiet or a.exec:
                 a.loop, a.quiet, a.exec = None, None, None
-            run(('(%s)' % a.post,), a, namespace)
+            run(("(%s)" % a.post,), a, namespace)
 
     else:
         if a.pre:
@@ -298,5 +354,5 @@ def main():
         run(expressions, a, namespace)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
