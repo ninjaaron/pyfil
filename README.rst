@@ -125,7 +125,7 @@ available objects
 ``pyfil`` automatically imports any modules used in expressions.
 
 If you'd like to create any other objects to use in the execution
-environment ~/.config/pyfil-env.py and put things in it.
+environment ``~/.config/pyfil-env.py`` and put things in it.
 
 default objects:
 
@@ -220,7 +220,7 @@ examples:
   /usr/lib/python3.5/plat-linux
   /usr/lib/python3.5/lib-dynload
   /home/ninjaaron/src/py/pyfil/venv/lib/python3.5/site-package
-  $ pyfil '(i.split('/')[1:] for i in sys.path)'
+  $ pyfil 'i.split("/")[1:] for i in sys.path'
   ["home", "ninjaaron", "src", "py", "pyfil", "venv", "bin"]
   ["home", "ninjaaron", "src", "py", "pyfil"]
   ["usr", "lib", "python35.zip"]
@@ -252,6 +252,9 @@ The --post option is immune from --quiet and --exec. It will always be
 evaluated with ``eval()``, and it will always try to print. The only
 difference is that if --quiet or --exec was used, json will be printed
 with indentation unless --force-oneline-json is used.
+
+If the -b/--pre option is used, its argument will always be run with
+``exec``.
 
 using files for input and output
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
