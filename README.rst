@@ -17,10 +17,10 @@ able to be any arbitrary text filter that doesn't come as a coreutil.
 ``perl -e`` is also quite good as a filter, and Ruby has made a valiant
 attempt to do so as well.
 
-While python does have a few good one-line uses (``python -m
+While Python does have a few good one-line uses (``python -m
 http.server``), some elements of its design make it less suited than the
 afore-mentioned languages. ``pyfil`` is one of several attempts to
-address this issue. In particular, it takes a lot of queues in the
+address this issue. In particular, it takes a lot of cues in the
 design of its CLI from AWK and Perl, and aims fundamentally to be a
 capable text filter, though it will evaluate any arbitrary Python
 expression and print its value (with modules being imported implicitly
@@ -28,7 +28,7 @@ as required).
 
 As a more modern touch, it also has a special emphasis on
 interoperability with JSON. If the return value of the evaluated
-expression is a container type, python will attempt to serialize it as
+expression is a container type, Python will attempt to serialize it as
 JSON before printing, so you can pipe output into other tools that deal
 with JSON, store it to a file for later use, or send it over http. This,
 combined with the ability to read JSON from stdin (with --json) make
