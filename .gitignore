@@ -5,3 +5,4 @@ __pycache__
 *.whl
 venv*
 *.html
+.mypy_cache
