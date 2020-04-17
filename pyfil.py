@@ -39,12 +39,13 @@ import re
 import ast
 import argparse
 from functools import update_wrapper
+from typing import Any, Iterable, Tuple, cast, Type
 
 
 class LazyDict(dict):
     __getattr__ = dict.__getitem__
     __setattr__ = dict.__setattr__
-    __delattr__ = dict.__delitem__
+    __delattr__ = dict.__delitem__  # type: ignore
 
 
 class reify:
@@ -82,7 +83,7 @@ class StdIn:
         return self.lines
 
     @reify
-    def l(self):
+    def l(self):  # noqa: E743
         return sys.stdin.read().splitlines()
 
     def __next__(self):
@@ -105,7 +106,7 @@ class SafeList(collections.UserList):
         return iter(self.data)
 
 
-def handle_errors(exception, args):
+def handle_errors(e: Exception, args):
     """stupid simple error handling"""
     if args.raise_errors:
         raise exception
@@ -133,36 +134,41 @@ def print_obj(obj, indent=None):
     else:
         try:
             print(
-                json.dumps(obj, ensure_ascii=False, indent=indent, cls=SafeListEncode)
+                json.dumps(
+                    obj, ensure_ascii=False, indent=indent, cls=SafeListEncode
+                )
             )
         except TypeError:
             print(obj)
 
 
-def run(expressions, args, namespace={}):
+def parse_handler(handler: str):
+    exn, expr = map(str.strip, handler.split(":", maxsplit=1))
+    return cast(Type[Exception], getattr(__builtins__, exn)), expr
+
+
+def run(expressions: Iterable[str], args, namespace):
     func = exec if args.exec else eval
+    if args.exception_handler:
+        exception, handler = parse_handler(args.exception_handler)
+
+        def run_expression(expr: str):
+            try:
+                return func(expr, namespace)
+            except exception:
+                return func(handler, namespace)
+
+    else:
+
+        def run_expressions(expr: str):
+            return func(expr, namespace)
+
     for expr in expressions:
-        if args.exception_handler:
-            exception, handler = tuple(
-                i.strip() for i in args.exception_handler.split(":", maxsplit=1)
-            )
-            try:
-                value = func(expr, namespace)
-            except __builtins__[exception]:
-                try:
-                    value = func(handler, namespace)
-                except Exception as e:
-                    value = handle_errors(e, args)
-                    continue
-            except Exception as e:
-                value = handle_errors(e, args)
-                continue
-        else:
-            try:
-                value = func(expr, namespace)
-            except Exception as e:
-                value = handle_errors(e, args)
-                continue
+        try:
+            value = run_expression(expr)
+        except Exception as e:
+            handle_errors(e, args)
+            continue
 
         if not args.exec:
             namespace.update(x=value)
@@ -170,9 +176,9 @@ def run(expressions, args, namespace={}):
     if not (args.quiet or args.exec):
         if args.join is not None and isinstance(value, collections.Iterable):
             print(
-                ast.literal_eval("'''" + args.join.replace("'", r"\'") + "'''").join(
-                    map(str, value)
-                )
+                ast.literal_eval(
+                    "'''" + args.join.replace("'", r"\'") + "'''"
+                ).join(map(str, value))
             )
         elif value is None:
             pass
@@ -186,7 +192,8 @@ def run(expressions, args, namespace={}):
 
 def get_args(arguments=None):
     parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     add = parser.add_argument
 
@@ -279,7 +286,12 @@ def get_args(arguments=None):
         help="regex used to split lines from stdin into list 'f'. implies --loop",
     )
 
-    add("-n", "--join", metavar="STRING", help="join items in iterables with STRING")
+    add(
+        "-n",
+        "--join",
+        metavar="STRING",
+        help="join items in iterables with STRING",
+    )
 
     add(
         "-R",
@@ -289,7 +301,12 @@ def get_args(arguments=None):
         "(default: print message to stderr and continue)",
     )
 
-    add("-S", "--silence-errors", action="store_true", help="suppress error messages")
+    add(
+        "-S",
+        "--silence-errors",
+        action="store_true",
+        help="suppress error messages",
+    )
 
     add(
         "-H",
@@ -305,7 +322,8 @@ def main():
     a = get_args()
     func = "exec" if a.exec else "eval"
     expressions = [
-        compile(e if a.exec else "(%s)" % e, "<string>", func) for e in a.expression
+        compile(e if a.exec else "(%s)" % e, "<string>", func)
+        for e in a.expression
     ]
     user_env = os.environ["HOME"] + "/.config/pyfil-env.py"
 
