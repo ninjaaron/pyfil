@@ -39,7 +39,7 @@ import re
 import ast
 import argparse
 from functools import update_wrapper
-from typing import Any, Iterable, Tuple, cast, Type
+from typing import Iterable, cast, Type
 
 
 class LazyDict(dict):
@@ -109,13 +109,13 @@ class SafeList(collections.UserList):
 def handle_errors(e: Exception, args):
     """stupid simple error handling"""
     if args.raise_errors:
-        raise exception
+        raise e
     elif args.silence_errors:
         pass
     else:
         print(
-            "\x1b[31m{}\x1b[0m:".format(exception.__class__.__name__),
-            exception,
+            "\x1b[31m{}\x1b[0m:".format(e.__class__.__name__),
+            e,
             file=sys.stderr,
         )
 
@@ -160,7 +160,7 @@ def run(expressions: Iterable[str], args, namespace):
 
     else:
 
-        def run_expressions(expr: str):
+        def run_expression(expr: str):
             return func(expr, namespace)
 
     for expr in expressions:
