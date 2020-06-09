@@ -38,8 +38,8 @@ import os
 import re
 import ast
 import argparse
-from functools import update_wrapper
-from typing import Iterable, cast, Type
+from functools import update_wrapper, partial
+from typing import Iterable, cast, Type, Callable
 
 
 class LazyDict(dict):
@@ -83,7 +83,7 @@ class StdIn:
         return self.lines
 
     @reify
-    def l(self):  # noqa: E743
+    def l(self):  # noqa: E743, E741
         return sys.stdin.read().splitlines()
 
     def __next__(self):
@@ -144,50 +144,60 @@ def print_obj(obj, indent=None):
 
 def parse_handler(handler: str):
     exn, expr = map(str.strip, handler.split(":", maxsplit=1))
-    return cast(Type[Exception], getattr(__builtins__, exn)), expr
+    return getattr(__builtins__, exn), expr
 
 
-def run(expressions: Iterable[str], args, namespace):
-    func = exec if args.exec else eval
-    if args.exception_handler:
-        exception, handler = parse_handler(args.exception_handler)
+def run_with_exception_handler(
+    func: Callable, exception, handler: str, namespace: dict, expr: str,
+):
+    try:
+        return func(expr, namespace)
+    except exception:
+        return func(handler, namespace)
 
-        def run_expression(expr: str):
-            try:
-                return func(expr, namespace)
-            except exception:
-                return func(handler, namespace)
 
-    else:
-
-        def run_expression(expr: str):
-            return func(expr, namespace)
-
+def run_expressions(runner, expressions, namespace, args):
+    value = None
     for expr in expressions:
         try:
-            value = run_expression(expr)
+            value = runner(expr)
         except Exception as e:
             handle_errors(e, args)
             continue
 
         if not args.exec:
             namespace.update(x=value)
+    return value
+
+
+def display_value(value, args):
+    if args.join is not None and isinstance(value, collections.Iterable):
+        joiner = "'''" + args.join.replace("'", r"\'") + "'''"
+        print(ast.literal_eval(joiner).join(map(str, value)))
+    elif value is None:
+        pass
+    elif isinstance(value, collections.Iterator):
+        for i in value:
+            print_obj(i)
+    else:
+        indent = None if (args.loop or args.force_oneline_json) else 2
+        print_obj(value, indent)
+
+
+def run(expressions: Iterable[str], args, namespace):
+    func = exec if args.exec else eval
+    if args.exception_handler:
+        exception, handler = parse_handler(args.exception_handler)
+        run_expression = partial(
+            run_with_exception_handler, func, exception, handler, namespace
+        )
+    else:
+        run_expression = lambda expr: func(expr, namespace)  # noqa: E731
+
+    value = run_expressions(run_expression, expressions, namespace, args)
 
     if not (args.quiet or args.exec):
-        if args.join is not None and isinstance(value, collections.Iterable):
-            print(
-                ast.literal_eval(
-                    "'''" + args.join.replace("'", r"\'") + "'''"
-                ).join(map(str, value))
-            )
-        elif value is None:
-            pass
-        elif isinstance(value, collections.Iterator):
-            for i in value:
-                print_obj(i)
-        else:
-            indent = None if (args.loop or args.force_oneline_json) else 2
-            print_obj(value, indent)
+        display_value(value, args)
 
 
 def get_args(arguments=None):
@@ -319,11 +329,11 @@ def get_args(arguments=None):
 
 
 def main():
-    a = get_args()
-    func = "exec" if a.exec else "eval"
+    args = get_args()
+    func = "exec" if args.exec else "eval"
     expressions = [
-        compile(e if a.exec else "(%s)" % e, "<string>", func)
-        for e in a.expression
+        compile(e if args.exec else "(%s)" % e, "<string>", func)
+        for e in args.expression
     ]
     user_env = os.environ["HOME"] + "/.config/pyfil-env.py"
 
@@ -332,44 +342,44 @@ def main():
     if os.path.exists(user_env):
         exec(open(user_env).read(), namespace)
 
-    if a.json:
+    if args.json:
         jdecode = json.JSONDecoder(object_hook=LazyDict).decode
-    elif a.real_dict_json:
+    elif args.real_dict_json:
         jdecode = json.loads
-        a.json = True
+        args.json = True
 
-    if a.post or a.split or a.field_sep:
-        a.loop = True
+    if args.post or args.split or args.field_sep:
+        args.loop = True
 
-    if a.loop:
-        if a.pre:
-            exec(a.pre, namespace)
+    if args.loop:
+        if args.pre:
+            exec(args.pre, namespace)
         for n, i in enumerate(map(str.rstrip, sys.stdin)):
             namespace.update(i=i, n=n)
-            if a.json:
+            if args.json:
                 namespace.update(j=jdecode(i))
 
-            if a.field_sep:
-                if len(a.field_sep) == 1:
-                    f = SafeList(i.split(a.field_sep))
+            if args.field_sep:
+                if len(args.field_sep) == 1:
+                    f = SafeList(i.split(args.field_sep))
                 else:
-                    f = SafeList(re.split(a.field_sep, i))
+                    f = SafeList(re.split(args.field_sep, i))
                 namespace.update(f=f)
-            elif a.split:
+            elif args.split:
                 namespace.update(f=SafeList(i.split()))
 
-            run(expressions, a, namespace)
-        if a.post:
-            if a.quiet or a.exec:
-                a.loop, a.quiet, a.exec = None, None, None
-            run(("(%s)" % a.post,), a, namespace)
+            run(expressions, args, namespace)
+        if args.post:
+            if args.quiet or args.exec:
+                args.loop, args.quiet, args.exec = None, None, None
+            run(("(%s)" % args.post,), args, namespace)
 
     else:
-        if a.pre:
-            exec(a.pre, namespace)
-        if a.json:
+        if args.pre:
+            exec(args.pre, namespace)
+        if args.json:
             namespace.update(j=jdecode(sys.stdin.read()))
-        run(expressions, a, namespace)
+        run(expressions, args, namespace)
 
 
 if __name__ == "__main__":
