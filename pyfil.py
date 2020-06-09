@@ -39,7 +39,7 @@ import re
 import ast
 import argparse
 from functools import update_wrapper, partial
-from typing import Iterable, cast, Type, Callable
+from typing import Iterable, Callable
 
 
 class LazyDict(dict):
