@@ -148,12 +148,12 @@ def parse_handler(handler: str):
 
 
 def run_with_exception_handler(
-    func: Callable, exception, handler: str, namespace: dict, expr: str,
+    func: Callable, exception, handler: str, expr: str,
 ):
     try:
-        return func(expr, namespace)
+        return func(expr)
     except exception:
-        return func(handler, namespace)
+        return func(handler)
 
 
 def run_expressions(runner, expressions, namespace, args):
@@ -184,18 +184,8 @@ def display_value(value, args):
         print_obj(value, indent)
 
 
-def run(expressions: Iterable[str], args, namespace):
-    func = exec if args.exec else eval
-    if args.exception_handler:
-        exception, handler = parse_handler(args.exception_handler)
-        run_expression = partial(
-            run_with_exception_handler, func, exception, handler, namespace
-        )
-    else:
-        run_expression = lambda expr: func(expr, namespace)  # noqa: E731
-
+def run(expressions: Iterable[str], args, namespace, run_expression: Callable):
     value = run_expressions(run_expression, expressions, namespace, args)
-
     if not (args.quiet or args.exec):
         display_value(value, args)
 
@@ -350,6 +340,17 @@ def main():
 
     if args.post or args.split or args.field_sep:
         args.loop = True
+    
+    _evaluate = exec if args.exec else eval
+    evaluate = lambda expr: _evaluate(expr, namespace)
+
+    if args.exception_handler:
+        exception, handler = parse_handler(args.exception_handler)
+        run_expression = partial(
+            run_with_exception_handler, evaluate, exception, handler
+        )
+    else:
+        run_expression = lambda expr: evaluate(expr)  # noqa: E731
 
     if args.loop:
         if args.pre:
@@ -368,11 +369,12 @@ def main():
             elif args.split:
                 namespace.update(f=SafeList(i.split()))
 
-            run(expressions, args, namespace)
+            run(expressions, args, namespace, run_expression)
         if args.post:
             if args.quiet or args.exec:
                 args.loop, args.quiet, args.exec = None, None, None
-            run(("(%s)" % args.post,), args, namespace)
+                _evaluate = eval
+            run(("(%s)" % args.post,), args, namespace, run_expression)
 
     else:
         if args.pre:
