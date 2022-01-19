@@ -39,7 +39,7 @@ import re
 import ast
 import argparse
 from functools import update_wrapper
-from collections.abc import Iterable
+from collections.abc import Iterator
 
 
 class LazyDict(dict):
@@ -169,7 +169,7 @@ def run(expressions, args, namespace={}):
             namespace.update(x=value)
 
     if not (args.quiet or args.exec):
-        if args.join is not None and isinstance(value, Iterable):
+        if args.join is not None and isinstance(value, Iterator):
             print(
                 ast.literal_eval("'''" + args.join.replace("'", r"\'") + "'''").join(
                     map(str, value)
@@ -177,7 +177,7 @@ def run(expressions, args, namespace={}):
             )
         elif value is None:
             pass
-        elif isinstance(value, Iterable):
+        elif isinstance(value, Iterator):
             for i in value:
                 print_obj(i)
         else:
