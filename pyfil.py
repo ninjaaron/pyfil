@@ -39,7 +39,7 @@ import re
 import ast
 import argparse
 from functools import update_wrapper, partial
-from typing import Iterable, Callable
+from typing import Iterable, Callable, Iterator
 
 
 class LazyDict(dict):
@@ -171,12 +171,12 @@ def run_expressions(runner, expressions, namespace, args):
 
 
 def display_value(value, args):
-    if args.join is not None and isinstance(value, collections.Iterable):
+    if args.join is not None and isinstance(value, Iterable):
         joiner = "'''" + args.join.replace("'", r"\'") + "'''"
         print(ast.literal_eval(joiner).join(map(str, value)))
     elif value is None:
         pass
-    elif isinstance(value, collections.Iterator):
+    elif isinstance(value, Iterator):
         for i in value:
             print_obj(i)
     else:
@@ -350,7 +350,7 @@ def main():
             run_with_exception_handler, evaluate, exception, handler
         )
     else:
-        run_expression = lambda expr: evaluate(expr)  # noqa: E731
+        run_expression =  evaluate
 
     if args.loop:
         if args.pre:
@@ -381,7 +381,7 @@ def main():
             exec(args.pre, namespace)
         if args.json:
             namespace.update(j=jdecode(sys.stdin.read()))
-        run(expressions, args, namespace)
+        run(expressions, args, namespace, run_expression)
 
 
 if __name__ == "__main__":
