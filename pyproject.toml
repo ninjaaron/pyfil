@@ -1,3 +1,6 @@
+[tool.black]
+line-length=79
+
 [tool.poetry]
 name = "pyfil"
 version = "1.9.2"
