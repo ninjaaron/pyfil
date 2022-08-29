@@ -3,7 +3,7 @@ line-length=79
 
 [tool.poetry]
 name = "pyfil"
-version = "1.9.2"
+version = "1.10.0"
 description = "Python one-liners in the shell in the spirit of Perl and AWK"
 authors = ["Aaron Christianson <ninjaaron@gmail.com>"]
 license = "BSD-2-Clause"
