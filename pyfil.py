@@ -31,6 +31,7 @@ descriptions for further details.
 
 Home: https://github.com/ninjaaron/pyfil
 """
+import builtins
 import collections
 import sys
 import json
@@ -149,7 +150,7 @@ def print_obj(obj, indent=None):
 
 def parse_handler(handler: str):
     exn, expr = map(str.strip, handler.split(":", maxsplit=1))
-    return getattr(__builtins__, exn), expr
+    return getattr(builtins, exn), expr
 
 
 def run_with_exception_handler(
@@ -332,7 +333,7 @@ def main():
     ]
     user_env = os.environ["HOME"] + "/.config/pyfil-env.py"
 
-    namespace = NameSpace(__builtins__.__dict__)
+    namespace = NameSpace(vars(builtins))
     namespace.update(stdin=StdIn(), l=[], d={})
     if os.path.exists(user_env):
         exec(open(user_env).read(), namespace)
@@ -388,8 +389,7 @@ def main():
             namespace.update(j=jdecode(sys.stdin.read()))
         run(expressions, args, namespace, run_expression)
 
+    sys.exit(EXIT_STATUS)
 
 if __name__ == "__main__":
     main()
-    sys.exit(EXIT_STATUS)
-
