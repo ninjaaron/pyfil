@@ -42,6 +42,9 @@ from functools import update_wrapper, partial
 from typing import Iterable, Callable, Iterator
 
 
+EXIT_STATUS = 0
+
+
 class LazyDict(dict):
     __getattr__ = dict.__getitem__
     __setattr__ = dict.__setattr__
@@ -113,6 +116,8 @@ def handle_errors(e: Exception, args):
     elif args.silence_errors:
         pass
     else:
+        global EXIT_STATUS
+        EXIT_STATUS = 1
         print(
             "\x1b[31m{}\x1b[0m:".format(e.__class__.__name__),
             e,
@@ -327,7 +332,7 @@ def main():
     ]
     user_env = os.environ["HOME"] + "/.config/pyfil-env.py"
 
-    namespace = NameSpace(__builtins__)
+    namespace = NameSpace(__builtins__.__dict__)
     namespace.update(stdin=StdIn(), l=[], d={})
     if os.path.exists(user_env):
         exec(open(user_env).read(), namespace)
@@ -386,3 +391,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    sys.exit(EXIT_STATUS)
+
